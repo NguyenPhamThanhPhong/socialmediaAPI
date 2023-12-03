@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using socialmediaAPI.Services.CloudinaryService;
 using System.Text;
 
 namespace socialmediaAPI.Configs
@@ -24,7 +25,8 @@ namespace socialmediaAPI.Configs
         public static IServiceCollection ConfigDbContext(this IServiceCollection services, IConfiguration config)
         {
             DatabaseConfigs databaseConfigs = new DatabaseConfigs();
-            config.Bind(databaseConfigs);
+            config.GetSection("DatabaseConfigs").Bind(databaseConfigs);
+
             databaseConfigs.SetupDatabase();
             services.AddSingleton(databaseConfigs);
             return services;
@@ -62,10 +64,10 @@ namespace socialmediaAPI.Configs
         public static IServiceCollection ConfigDI(this IServiceCollection services, IConfiguration config)
         {
             //Cloudinary
-            //CloudinaryConfigs cloudinarySettings = new CloudinaryConfigs();
-            //config.Bind("CloudinarySettings", cloudinarySettings);
-            //services.AddSingleton(cloudinarySettings);
-            //services.AddSingleton<CloudinaryHandler>();
+            CloudinaryConfigs cloudinarySettings = new CloudinaryConfigs();
+            config.Bind("CloudinarySettings", cloudinarySettings);
+            services.AddSingleton(cloudinarySettings);
+            services.AddSingleton<CloudinaryHandler>();
             return services;
         }
     }

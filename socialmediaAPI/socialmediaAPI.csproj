@@ -17,8 +17,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Models\Embeded\CommentLog\" />
+    <Folder Include="Models\Embeded\MessageLog\" />
     <Folder Include="RequestsResponses\Responses\" />
-    <Folder Include="RequestsResponses\Requests\" />
   </ItemGroup>
 
 
