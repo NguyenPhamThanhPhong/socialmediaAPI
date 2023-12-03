@@ -69,7 +69,7 @@ namespace socialmediaAPI.Services.CloudinaryService
                 Console.WriteLine("Invalid Cloudinary URL");
             }
         }
-        private string GetPublicIdFromUrl(string imageUrl)
+        private string? GetPublicIdFromUrl(string imageUrl)
         {
             // Example Cloudinary URL format: https://res.cloudinary.com/{cloudName}/image/upload/{publicId}.{format}
             var uri = new System.Uri(imageUrl);
