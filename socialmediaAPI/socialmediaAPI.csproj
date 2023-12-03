@@ -21,8 +21,5 @@
     <Folder Include="RequestsResponses\Requests\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EditorConfigFiles Remove="D:\PhongselfProject\QL du an PM\API\socialmediaAPI\socialmediaAPI\Repositories\Interface\.editorconfig" />
-  </ItemGroup>
 
 </Project>
