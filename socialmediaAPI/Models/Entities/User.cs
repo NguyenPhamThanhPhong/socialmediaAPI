@@ -22,6 +22,10 @@ namespace socialmediaAPI.Models.Entities
         public List<string> PostIds { get; set; }
         public List<Notification> Notifications { get; set; }
         public VerificationTicket EmailVerification { get; set; }
+        public User()
+        {
+            ID = string.Empty;
+        }
         public static string GetFieldName<T>(Expression<Func<User, T>> expression)
         {
             if (expression.Body is MemberExpression memberExpression)

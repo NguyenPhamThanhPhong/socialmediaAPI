@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using socialmediaAPI.Repositories.Interface;
+using socialmediaAPI.Repositories.Repos;
 using socialmediaAPI.Services.CloudinaryService;
+using socialmediaAPI.Services.Validators;
 using System.Text;
 
 namespace socialmediaAPI.Configs
@@ -35,9 +38,9 @@ namespace socialmediaAPI.Configs
         {
             //services.AddSingleton<IConversationRepository, ConversationRepository>();
             //services.AddSingleton<IMessageLogRepository, MessageLogRepository>();
-            //services.AddSingleton<IUserRepository, UserRepository>();
-            //services.AddSingleton<IPostRepository, PostRepository>();
-            //services.AddSingleton<ICommentLogRepository, CommentLogRepository>();
+            services.AddSingleton<IUserRepository, UserRepository>();
+            services.AddSingleton<IPostRepository, PostRepository>();
+            services.AddSingleton<ICommentLogRepository, CommentLogRepository>();
             return services;
         }
         public static IServiceCollection ConfigAuthentication(this IServiceCollection services, IConfiguration config)
@@ -68,6 +71,8 @@ namespace socialmediaAPI.Configs
             config.Bind("CloudinarySettings", cloudinarySettings);
             services.AddSingleton(cloudinarySettings);
             services.AddSingleton<CloudinaryHandler>();
+            //Validator
+            services.AddTransient<UserValidator>();
             return services;
         }
     }

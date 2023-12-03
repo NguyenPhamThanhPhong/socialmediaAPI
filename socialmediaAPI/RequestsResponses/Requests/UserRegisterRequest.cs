@@ -13,9 +13,10 @@ namespace socialmediaAPI.RequestsResponses.Requests
         public string Username { get; set; }
         [StringLength(32, MinimumLength = 4, ErrorMessage = "The {0} must be at least {2} and at most {1} characters long.")]
         public string Password { get; set; }
-        [StringLength(32, MinimumLength = 4, ErrorMessage = "The {0} must be at least {2} and at most {1} characters long.")]
+        [Required]
+        [EmailAddress]
         public string Email { get; set; }
-        public string Name { get; set; }
+        public PersonalInformation Profile { get; set; }
         public IFormFile? File { get; set; }
 
         public User ConvertToUser()
@@ -28,7 +29,8 @@ namespace socialmediaAPI.RequestsResponses.Requests
                     Password = Password,
                     Email = Email,
                     IsVerified = false
-                }
+                },
+                PersonalInfo = Profile
             };
         }
     }
