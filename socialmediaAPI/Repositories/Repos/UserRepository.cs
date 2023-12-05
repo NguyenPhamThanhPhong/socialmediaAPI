@@ -19,10 +19,10 @@ namespace socialmediaAPI.Repositories.Repos
         {
             return _userCollection.InsertOneAsync(user);
         }
-        public Task Delete(string id)
+        public Task<User> Delete(string id)
         {
             var filter = Builders<User>.Filter.Eq(u => u.ID, id);
-            return _userCollection.DeleteOneAsync(filter);
+            return _userCollection.FindOneAndDeleteAsync(filter);
         }
 
         public Task<List<User>> GetbyFilterString(string filterString)

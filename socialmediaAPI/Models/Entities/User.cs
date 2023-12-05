@@ -13,6 +13,7 @@ namespace socialmediaAPI.Models.Entities
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string ID { get; set; }
+        public bool IsMailConfirmed { get; set; }
         public AuthenticationInformation AuthenticationInfo { get; set; }
         public PersonalInformation PersonalInfo { get; set; }
         public List<string> FriendWaitIds { get; set; }
@@ -28,11 +29,22 @@ namespace socialmediaAPI.Models.Entities
         }
         public static string GetFieldName<T>(Expression<Func<User, T>> expression)
         {
-            if (expression.Body is MemberExpression memberExpression)
+            var memberExpression = expression.Body as MemberExpression;
+
+            if (memberExpression == null)
             {
-                return memberExpression.Member.Name;
+                throw new ArgumentException("Invalid expression. Must be a property access expression.", nameof(expression));
             }
-            return nameof(expression.Body);
+
+            var stack = new Stack<string>();
+
+            while (memberExpression != null)
+            {
+                stack.Push(memberExpression.Member.Name);
+                memberExpression = memberExpression.Expression as MemberExpression;
+            }
+
+            return string.Join(".", stack);
         }
 
     }

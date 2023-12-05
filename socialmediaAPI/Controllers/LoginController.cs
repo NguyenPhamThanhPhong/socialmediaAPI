@@ -1,10 +1,15 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Org.BouncyCastle.Asn1.Ocsp;
 using socialmediaAPI.Configs;
+using socialmediaAPI.Models.DTO;
+using socialmediaAPI.Models.Entities;
 using socialmediaAPI.Repositories.Interface;
 using socialmediaAPI.RequestsResponses.Requests;
 using socialmediaAPI.Services.CloudinaryService;
+using socialmediaAPI.Services.SMTP;
 using socialmediaAPI.Services.Validators;
 
 namespace socialmediaAPI.Controllers
@@ -17,14 +22,17 @@ namespace socialmediaAPI.Controllers
         private readonly UserValidator _userValidator;
         private readonly CloudinaryHandler _cloudinaryHandler;
         private readonly string _userFolderName;
+        private readonly EmailUtil _emailUtil;
 
-        public LoginController(IUserRepository userRepository, UserValidator userValidator, 
-            CloudinaryHandler cloudinaryHandler,CloudinaryConfigs cloudinaryConfigs)
+        public LoginController(IUserRepository userRepository, UserValidator userValidator,
+            CloudinaryHandler cloudinaryHandler, CloudinaryConfigs cloudinaryConfigs,
+            EmailUtil emailUtil)
         {
             _userRepository = userRepository;
             _userValidator = userValidator;
             _cloudinaryHandler = cloudinaryHandler;
             _userFolderName = cloudinaryConfigs.UserFolderName;
+            _emailUtil = emailUtil;
         }
 
         [HttpPost("/register")]
@@ -54,6 +62,57 @@ namespace socialmediaAPI.Controllers
             }
             return Ok(user);
         }
+        [HttpPost("/login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest("Incorrect username or password");
+            var user = await _userRepository.GetbyUsername(request.Username);
+            if (user == null || !(user.AuthenticationInfo.Password == request.Password))
+                return BadRequest("Incorrect username or password");
+            return Ok(user);
+        }
+
+
+
+        [HttpPost("/send-mail-verification")]
+        public async Task<IActionResult> SendVerification([FromBody] LoginRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
+            var user = await _userRepository.GetbyUsername(request.Username);
+            if (user == null || !(user.AuthenticationInfo.Password == request.Password))
+                return BadRequest("Incorrect username or password");
+
+            Random random = new Random();
+            string codeValue = random.Next(100000, 999999).ToString();
+            var result = await _emailUtil.SendEmailAsync(user.AuthenticationInfo.Email, 
+                "No reply: your email verification code is", codeValue);
+            user.EmailVerification = new Models.Embeded.User.VerificationTicket
+            {
+                Code = codeValue,
+                ExpiredTime = DateTime.UtcNow.AddMinutes(15)
+            };
+            await _userRepository.UpdatebyInstance(user);
+            return Ok($"sending result is {result}");
+        }
+        [HttpPost("/confirm-mail/{id}")]
+        public async Task<IActionResult> ConfirmEmail(string id,[FromBody]string code)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
+            var user = await _userRepository.GetbyId(id);
+            if (user == null)
+                return BadRequest("invalid user");
+            if (user.EmailVerification != null && user.EmailVerification.Code == code)
+            {
+                user.IsMailConfirmed = true;
+                await _userRepository.UpdatebyInstance(user);
+                return Ok("confirmed");
+            }
+            return BadRequest("invalid code");
+        }
+
 
         #region private Util function update user Database & Cloudinary
         private async Task UpdateUserAvatar(string id, List<IFormFile> files)
@@ -61,8 +120,8 @@ namespace socialmediaAPI.Controllers
             var avatarSet = await _cloudinaryHandler.UploadImages(files, _userFolderName);
             UpdateParameter parameter = new UpdateParameter()
             {
-                FieldName = Models.Entities.User.GetFieldName(u => u.PersonalInfo.AvatarUrl),
-                Value = avatarSet,
+                FieldName = Models.Entities.User.GetFieldName(u=>u.PersonalInfo.AvatarUrl),
+                Value = avatarSet.Values.FirstOrDefault(),
                 updateAction = UpdateAction.set
             };
             await _userRepository.UpdatebyParameters(id, new List<UpdateParameter> { parameter });

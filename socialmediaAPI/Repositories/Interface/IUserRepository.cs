@@ -11,7 +11,7 @@ namespace socialmediaAPI.Repositories.Interface
         public Task<User> GetbyUsername(string username);
         public Task<List<User>> GetbyFilterString(string filterString);
 
-        public Task Delete(string id);
+        public Task<User> Delete(string id);
 
         public Task UpdatebyInstance(User user);
         public Task UpdatebyParameters(string id, List<UpdateParameter> parameters);

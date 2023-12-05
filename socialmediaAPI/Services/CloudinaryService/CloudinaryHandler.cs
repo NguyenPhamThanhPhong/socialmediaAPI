@@ -41,27 +41,44 @@ namespace socialmediaAPI.Services.CloudinaryService
             }
             return result;
         }
-        public void Delete(string Url)
+        public async Task<string?> UploadSingleImage(IFormFile file, string folderName)
         {
+            if (file.Length > 0)
+            {
+                using (var stream = file.OpenReadStream())
+                {
+                    string fileName = Guid.NewGuid().ToString();
+                    var uploadParams = new ImageUploadParams
+                    {
+                        File = new FileDescription(fileName, stream),
+                        Folder = folderName
+                    };
+                    var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                    return (uploadResult.SecureUri).AbsoluteUri;
+                }
+            }
+            return null;
+        }
+        public async Task Delete(string? Url)
+        {
+            if (string.IsNullOrEmpty(Url))
+                return;
             var publicId = GetPublicIdFromUrl(Url);
 
             if (!string.IsNullOrEmpty(publicId))
             {
-                var deletionParams = new DeletionParams(publicId)
-                {
-                    ResourceType = ResourceType.Image // Specify the resource type (image in this case)
-                };
+                var deletionParams = new DeletionParams(publicId);
 
-                var deletionResult = _cloudinary.Destroy(deletionParams);
+                var deletionResult = await _cloudinary.DestroyAsync(deletionParams);
 
                 // Check if the deletion was successful
                 if (deletionResult.Result == "ok")
                 {
-                    Console.WriteLine($"Image deleted successfully. Public ID: {publicId}");
+                    Console.WriteLine($"File deleted successfully. Public ID: {publicId}");
                 }
                 else
                 {
-                    Console.WriteLine($"Failed to delete image. Error: {deletionResult.Error.Message}");
+                    Console.WriteLine($"Failed to delete file. Error: {deletionResult.Error.Message}");
                 }
             }
             else
@@ -69,6 +86,7 @@ namespace socialmediaAPI.Services.CloudinaryService
                 Console.WriteLine("Invalid Cloudinary URL");
             }
         }
+
         private string? GetPublicIdFromUrl(string imageUrl)
         {
             // Example Cloudinary URL format: https://res.cloudinary.com/{cloudName}/image/upload/{publicId}.{format}

@@ -16,21 +16,29 @@ namespace socialmediaAPI.RequestsResponses.Requests
         [Required]
         [EmailAddress]
         public string Email { get; set; }
-        public PersonalInformation Profile { get; set; }
+        public string Name { get; set; }
+        public DateTime DateOfBirth { get; set; }
+        public string Favorite { get; set; }
+
         public IFormFile? File { get; set; }
 
         public User ConvertToUser()
         {
             return new User()
             {
+                IsMailConfirmed = false,
                 AuthenticationInfo = new AuthenticationInformation()
                 {
                     Username = Username,
                     Password = Password,
                     Email = Email,
-                    IsVerified = false
                 },
-                PersonalInfo = Profile
+                PersonalInfo = new PersonalInformation()
+                {
+                    Name = Name,
+                    DateofBirth = this.DateOfBirth,
+                    Favorites = Favorite
+                }
             };
         }
     }

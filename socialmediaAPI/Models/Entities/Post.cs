@@ -24,11 +24,22 @@ namespace socialmediaAPI.Models.Entities
         }
         public static string GetFieldName<T>(Expression<Func<Post, T>> expression)
         {
-            if (expression.Body is MemberExpression memberExpression)
+            var memberExpression = expression.Body as MemberExpression;
+
+            if (memberExpression == null)
             {
-                return memberExpression.Member.Name;
+                throw new ArgumentException("Invalid expression. Must be a property access expression.", nameof(expression));
             }
-            return nameof(expression.Body);
+
+            var stack = new Stack<string>();
+
+            while (memberExpression != null)
+            {
+                stack.Push(memberExpression.Member.Name);
+                memberExpression = memberExpression.Expression as MemberExpression;
+            }
+
+            return string.Join(".", stack);
         }
 
     }

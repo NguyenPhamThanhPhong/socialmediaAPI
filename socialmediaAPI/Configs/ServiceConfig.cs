@@ -2,7 +2,9 @@
 using Microsoft.IdentityModel.Tokens;
 using socialmediaAPI.Repositories.Interface;
 using socialmediaAPI.Repositories.Repos;
+using socialmediaAPI.Services.Authentication;
 using socialmediaAPI.Services.CloudinaryService;
+using socialmediaAPI.Services.SMTP;
 using socialmediaAPI.Services.Validators;
 using System.Text;
 
@@ -45,23 +47,23 @@ namespace socialmediaAPI.Configs
         }
         public static IServiceCollection ConfigAuthentication(this IServiceCollection services, IConfiguration config)
         {
-            //TokenConfiguration tokenConfiguration = new TokenConfiguration();
-            //config.Bind("TokenConfiguration", tokenConfiguration);
-            //services.AddSingleton(tokenConfiguration);
-            //services.AddSingleton<TokenGenerator>();
-            //services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
-            //{
-            //    options.TokenValidationParameters = new TokenValidationParameters()
-            //    {
-            //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenConfiguration.AccessTokenSecret)),
-            //        ValidIssuer = tokenConfiguration.Issuer,
-            //        ValidAudience = tokenConfiguration.Audience,
-            //        ValidateIssuer = true,
-            //        ValidateAudience = true,
-            //        ValidateIssuerSigningKey = true,
-            //        ClockSkew = TimeSpan.FromMinutes(6)
-            //    };
-            //});
+            TokenConfigs tokenConfiguration = new TokenConfigs();
+            config.Bind("TokenConfiguration", tokenConfiguration);
+            services.AddSingleton(tokenConfiguration);
+            services.AddSingleton<TokenGenerator>();
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenConfiguration.AccessTokenSecret)),
+                    ValidIssuer = tokenConfiguration.Issuer,
+                    ValidAudience = tokenConfiguration.Audience,
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ClockSkew = TimeSpan.FromMinutes(6)
+                };
+            });
             return services;
         }
         public static IServiceCollection ConfigDI(this IServiceCollection services, IConfiguration config)
@@ -71,6 +73,13 @@ namespace socialmediaAPI.Configs
             config.Bind("CloudinarySettings", cloudinarySettings);
             services.AddSingleton(cloudinarySettings);
             services.AddSingleton<CloudinaryHandler>();
+            //SMTP
+            SMTPConfigs smtpConfigs = new SMTPConfigs();
+            config.Bind("SMTPConfiguration", smtpConfigs);
+            services.AddSingleton(smtpConfigs);
+            services.AddSingleton<EmailUtil>();
+            //Automapper
+            services.AddAutoMapper(typeof(AutomapperConfigs));
             //Validator
             services.AddTransient<UserValidator>();
             return services;
