@@ -1,9 +1,11 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using socialmediaAPI.Models.Embeded.Post;
 using System.Linq.Expressions;
+using MongoDB.Bson;
 
 namespace socialmediaAPI.Models.Entities
 {
+    [BsonIgnoreExtraElements]
     public class Post
     {
 #pragma warning disable CS8618
@@ -14,13 +16,15 @@ namespace socialmediaAPI.Models.Entities
         public string Contennt { get; set; }
         public int CommentCounter { get; set; }
         public string? SharedPost { get; set; }
-        public Dictionary<string, string> FileUrls { get; set; }
+        public Dictionary<string, string?>? FileUrls { get; set; }
         public OwnerRepresentation Owner { get; set; }
-        public List<LikeRepresentation> Likes { get; set; }
+        public List<object> Likes { get; set; }
         public List<string> CommentLogIds { get; set; }
         public Post()
         {
             Id = string.Empty;
+            Likes = new List<object>();
+            CommentLogIds = new List<string>();
         }
         public static string GetFieldName<T>(Expression<Func<Post, T>> expression)
         {

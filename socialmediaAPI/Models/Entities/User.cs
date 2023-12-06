@@ -13,6 +13,7 @@ namespace socialmediaAPI.Models.Entities
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string ID { get; set; }
+
         public bool IsMailConfirmed { get; set; }
         public AuthenticationInformation AuthenticationInfo { get; set; }
         public PersonalInformation PersonalInfo { get; set; }
@@ -26,6 +27,12 @@ namespace socialmediaAPI.Models.Entities
         public User()
         {
             ID = string.Empty;
+            FriendWaitIds= new List<string>();
+            FriendRequestIds = new List<string>();
+            FriendIds = new List<string>();
+            BlockedIds = new List<string>();
+            PostIds = new List<string>();
+            Notifications = new List<Notification>();
         }
         public static string GetFieldName<T>(Expression<Func<User, T>> expression)
         {

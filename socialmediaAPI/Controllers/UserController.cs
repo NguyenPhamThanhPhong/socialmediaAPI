@@ -64,7 +64,8 @@ namespace socialmediaAPI.Controllers
             };
             if (formData.file == null)
             {
-                await _cloudinaryHandler.Delete(formData.prevUrl);
+                if(!string.IsNullOrEmpty(formData.prevUrl))
+                    await _cloudinaryHandler.Delete(formData.prevUrl);
                 avatarParameter.Value = null;
             }
             else

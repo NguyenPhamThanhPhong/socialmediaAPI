@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace socialmediaAPI.RequestsResponses.Requests
 {
@@ -13,8 +14,11 @@ namespace socialmediaAPI.RequestsResponses.Requests
     }
     public enum UpdateAction
     {
+        [Description("set")]
         set,
+        [Description("push")]
         push,
+        [Description("pull")]
         pull
     }
 }

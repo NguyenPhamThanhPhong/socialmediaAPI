@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson.Serialization;
+using MongoDB.Driver;
 using socialmediaAPI.Models.Entities;
 
 namespace socialmediaAPI.Configs
@@ -31,6 +32,8 @@ namespace socialmediaAPI.Configs
         {
             MongoClient = new MongoClient(ConnectionString);
             MongoDtb = MongoClient.GetDatabase(DatabaseName);
+
+
             UserCollection = MongoDtb.GetCollection<User>(UserCollectionName);
             MessageLogCollection = MongoDtb.GetCollection<MessageLog>(MessageLogCollectionName);
             ConversationCollection = MongoDtb.GetCollection<Conversation>(ConversationCollectionName);

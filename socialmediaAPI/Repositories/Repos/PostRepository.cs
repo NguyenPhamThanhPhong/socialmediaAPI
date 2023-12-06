@@ -10,9 +10,9 @@ namespace socialmediaAPI.Repositories.Repos
 {
     public class PostRepository : IPostRepository
     {
-        private IMongoCollection<User> _userCollection;
-        private IMongoCollection<Post> _postCollection;
-        private IMongoCollection<CommentLog> _commentLogCollection;
+        private readonly IMongoCollection<User> _userCollection;
+        private readonly IMongoCollection<Post> _postCollection;
+        private readonly IMongoCollection<CommentLog> _commentLogCollection;
         public PostRepository(DatabaseConfigs configuration)
         {
             _userCollection = configuration.UserCollection;
@@ -27,7 +27,7 @@ namespace socialmediaAPI.Repositories.Repos
             await _userCollection.UpdateOneAsync(filterUser, updateUser);
         }
 
-        public async Task Delete(string id)
+        public async Task<Post> Delete(string id)
         {
             var deletedPost = await _postCollection.FindOneAndDeleteAsync(p => p.Id == id);
 
@@ -37,6 +37,7 @@ namespace socialmediaAPI.Repositories.Repos
 
             var filterCommentLog = Builders<CommentLog>.Filter.In(c => c.Id, deletedPost.CommentLogIds);
             await _commentLogCollection.DeleteManyAsync(filterCommentLog);
+            return deletedPost;
         }
 
         public Task<List<Post>> GetbyFilterString(string filterString)
@@ -64,12 +65,18 @@ namespace socialmediaAPI.Repositories.Repos
             var filter = Builders<Post>.Filter.Eq(p => p.Id, id);
             var updateBuilder = Builders<Post>.Update;
             List<UpdateDefinition<Post>> subUpdates = new List<UpdateDefinition<Post>>();
+
             foreach (var parameter in parameters)
             {
                 switch (parameter.updateAction)
                 {
                     case UpdateAction.set:
-                        subUpdates.Add(Builders<Post>.Update.Set(parameter.FieldName, parameter.Value));
+                        var myobj = new
+                        {
+                            field1 = "abc",
+                            field2 = "adssss"
+                        };
+                        subUpdates.Add(Builders<Post>.Update.Set("Likes", myobj ));
                         break;
                     case UpdateAction.push:
                         subUpdates.Add(Builders<Post>.Update.Push(parameter.FieldName, parameter.Value));

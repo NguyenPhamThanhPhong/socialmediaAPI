@@ -87,6 +87,17 @@ namespace socialmediaAPI.Services.CloudinaryService
             }
         }
 
+        //public async Task DeleteMany(List<string> Urls)
+        //{
+        //    List<string?> publicIds = new List<string?>();
+        //    foreach(var url in Urls)
+        //    {
+        //        if(!string.IsNullOrEmpty(url))
+        //            publicIds.Add(GetPublicIdFromUrl(url));
+        //    }
+
+        //}
+
         private string? GetPublicIdFromUrl(string imageUrl)
         {
             // Example Cloudinary URL format: https://res.cloudinary.com/{cloudName}/image/upload/{publicId}.{format}

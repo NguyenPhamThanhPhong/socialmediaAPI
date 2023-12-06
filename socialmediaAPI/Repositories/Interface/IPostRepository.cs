@@ -13,6 +13,6 @@ namespace socialmediaAPI.Repositories.Interface
         public Task UpdatebyInstance(Post post);
         public Task UpdatebyParameters(string id, List<UpdateParameter> parameters);
 
-        public Task Delete(string id);
+        public Task<Post> Delete(string id);
     }
 }
