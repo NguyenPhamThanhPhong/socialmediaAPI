@@ -1,6 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
+using System.Text.Json;
 using socialmediaAPI.Configs;
 using socialmediaAPI.Models.Entities;
 using socialmediaAPI.Repositories.Interface;
@@ -57,16 +58,17 @@ namespace socialmediaAPI.Repositories.Repos
             List<UpdateDefinition<User>> subUpdates = new List<UpdateDefinition<User>>();
             foreach (var parameter in parameters)
             {
+                var myValue = parameter.Value;
                 switch (parameter.updateAction)
                 {
                     case UpdateAction.set:
-                        subUpdates.Add(Builders<User>.Update.Set(parameter.FieldName, parameter.Value));
+                        subUpdates.Add(Builders<User>.Update.Set(parameter.FieldName, myValue));
                         break;
                     case UpdateAction.push:
-                        subUpdates.Add(Builders<User>.Update.Push(parameter.FieldName, parameter.Value));
+                        subUpdates.Add(Builders<User>.Update.Push(parameter.FieldName, myValue));
                         break;
                     case UpdateAction.pull:
-                        subUpdates.Add(Builders<User>.Update.Pull(parameter.FieldName, parameter.Value));
+                        subUpdates.Add(Builders<User>.Update.Pull(parameter.FieldName, myValue));
                         break;
                 }
             }

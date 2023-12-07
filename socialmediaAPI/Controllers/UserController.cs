@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using socialmediaAPI.Configs;
 using socialmediaAPI.Models.DTO;
+using socialmediaAPI.Models.Embeded.User;
 using socialmediaAPI.Models.Entities;
 using socialmediaAPI.Repositories.Interface;
 using socialmediaAPI.RequestsResponses.Requests;
@@ -19,12 +21,13 @@ namespace socialmediaAPI.Controllers
         private readonly string _userFolderName;
 
 
-        public UserController(IMapper mapper, IUserRepository userRepository, CloudinaryHandler cloudinaryHandler, string userFolderName)
+        public UserController(IMapper mapper, IUserRepository userRepository, CloudinaryHandler cloudinaryHandler, 
+            CloudinaryConfigs cloudinaryConfigs)
         {
             _mapper = mapper;
             _userRepository = userRepository;
             _cloudinaryHandler = cloudinaryHandler;
-            _userFolderName = userFolderName;
+            _userFolderName = cloudinaryConfigs.UserFolderName;
         }
 
         [HttpGet("/viewDTO/{id}")]
@@ -34,24 +37,28 @@ namespace socialmediaAPI.Controllers
                 return BadRequest("invalid id");
             var user = await _userRepository.GetbyId(id);
             var userDTO = _mapper.Map<UserDTO>(user);
-            return Ok(userDTO);
+            return Ok(user);
         }
-        [HttpPut("/update-by-parameters/{id}")]
-        public async Task<IActionResult> UpdatebyParameter(string id, [FromBody] List<UpdateParameter> parameters)
+        [HttpPut("/update-email/{id}")]
+        public async Task<IActionResult> UpdateEmail(string id, [FromBody] string email)
         {
             if (!ModelState.IsValid)
-                return BadRequest($"invalid model state {parameters}");
-            await _userRepository.UpdatebyParameters(id, parameters);
+                return BadRequest($"invalid model state");
+            var parameter = new UpdateParameter(Models.Entities.User.GetFieldName(u => u.AuthenticationInfo.Email), email, UpdateAction.set);
+            await _userRepository.UpdatebyParameters(id, new List<UpdateParameter> { parameter});
             return Ok("updated");
         }
-        [HttpPut("/update-instance")]
-        public async Task<IActionResult> UpdatebyParameter([FromBody] User user)
+
+        [HttpPut("/update-password/{id}")]
+        public async Task<IActionResult> UpdatePassword(string id, [FromBody] string password)
         {
             if (!ModelState.IsValid)
-                return BadRequest($"invalid model state ");
-            await _userRepository.UpdatebyInstance(user);
+                return BadRequest($"invalid model state");
+            var parameter = new UpdateParameter(Models.Entities.User.GetFieldName(u => u.AuthenticationInfo.Password), password, UpdateAction.set);
+            await _userRepository.UpdatebyParameters(id, new List<UpdateParameter> { parameter });
             return Ok("updated");
         }
+
         [HttpPut("/update-avatar/{id}")]
         public async Task<IActionResult> UpdateAvatar(string id, [FromForm] (string prevUrl, IFormFile file) formData)
         {
@@ -72,6 +79,26 @@ namespace socialmediaAPI.Controllers
                 avatarParameter.Value = await _cloudinaryHandler.UploadSingleImage(formData.file, _userFolderName);
 
             await _userRepository.UpdatebyParameters(id,new List<UpdateParameter> { avatarParameter });
+            return Ok("updated");
+        }
+        [HttpPut("/update-personal-info/{id}")]
+        public async Task<IActionResult> UpdatePersonalInfo(string id, [FromForm] UpdateUserPersonalInformationRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest("invalid modelstate");
+            var personalInfo = request.ConvertToPersonalInformation();
+            var dict = await _cloudinaryHandler.UploadImages(new List<IFormFile> { request.AvatarFile }, _userFolderName); ;
+            personalInfo.AvatarUrl = dict.Values.FirstOrDefault();
+            var parameter = new UpdateParameter(Models.Entities.User.GetFieldName(u => u.PersonalInfo),personalInfo,UpdateAction.set);
+            return Ok(parameter);
+
+        }
+        [HttpPut("/update-parameters-string-fields/{id}")]
+        public async Task<IActionResult> UpdateParmeters(string id, [FromBody] List<UpdateParameter> parameters)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest("invalid modelstate");
+            await _userRepository.UpdatebyParameters(id, parameters);
             return Ok("updated");
         }
 

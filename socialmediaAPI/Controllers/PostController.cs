@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using socialmediaAPI.Configs;
+using socialmediaAPI.Models.Embeded.Post;
 using socialmediaAPI.Models.Entities;
 using socialmediaAPI.Repositories.Interface;
 using socialmediaAPI.RequestsResponses.Requests;
@@ -47,15 +48,14 @@ namespace socialmediaAPI.Controllers
             return Ok("updated");
         }
 
-        [HttpPut("/update-parameters")]
-        public async Task<IActionResult> UpdateParameters([FromBody] List<UpdateParameter> updateParameters)
+        [HttpPost("/like-unlike")]
+        public async Task<IActionResult> UpdateLikes(string id, [FromBody] (LikeRepresentation like, UpdateAction updateAction) request)
         {
-            //if (!ModelState.IsValid)
-            //    return BadRequest("invalid modelstate");
-            //await _postRepository.UpdatebyParameters(id, updateParameters);
-            return Ok(updateParameters[0].Value);
+            if (!ModelState.IsValid || request.updateAction == UpdateAction.set)
+                return BadRequest("invalid modelstate");
+            var parameter = new UpdateParameter(Post.GetFieldName(p=>p.Likes),request.like,request.updateAction);
+            return Ok("updated");
         }
-
 
         [HttpGet("/view/{id}")]
         public async Task<IActionResult> Get(string id)

@@ -24,6 +24,7 @@ namespace socialmediaAPI.Controllers
         private readonly string _userFolderName;
         private readonly EmailUtil _emailUtil;
 
+
         public LoginController(IUserRepository userRepository, UserValidator userValidator,
             CloudinaryHandler cloudinaryHandler, CloudinaryConfigs cloudinaryConfigs,
             EmailUtil emailUtil)
@@ -50,11 +51,9 @@ namespace socialmediaAPI.Controllers
             var user = request.ConvertToUser();
             try
             {
+                var avatarSet = await _cloudinaryHandler.UploadImages(new List<IFormFile> { request.File }, _userFolderName);
+                user.PersonalInfo.AvatarUrl = avatarSet.Values.FirstOrDefault();
                 await _userRepository.Create(user);
-                if(request.File!= null)
-                {
-                    await this.UpdateUserAvatar(user.ID, new List<IFormFile> { request.File });
-                }
             }
             catch (Exception ex)
             {
@@ -114,13 +113,14 @@ namespace socialmediaAPI.Controllers
         }
 
 
+
         #region private Util function update user Database & Cloudinary
         private async Task UpdateUserAvatar(string id, List<IFormFile> files)
         {
             var avatarSet = await _cloudinaryHandler.UploadImages(files, _userFolderName);
             UpdateParameter parameter = new UpdateParameter()
             {
-                FieldName = Models.Entities.User.GetFieldName(u=>u.PersonalInfo.AvatarUrl),
+                FieldName = Models.Entities.User.GetFieldName(u => u.PersonalInfo.AvatarUrl),
                 Value = avatarSet.Values.FirstOrDefault(),
                 updateAction = UpdateAction.set
             };

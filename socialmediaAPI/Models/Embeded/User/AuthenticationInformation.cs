@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+﻿using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace socialmediaAPI.Models.Embeded.User
 {

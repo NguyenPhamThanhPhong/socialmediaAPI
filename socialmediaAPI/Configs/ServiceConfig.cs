@@ -14,7 +14,10 @@ namespace socialmediaAPI.Configs
     {
         public static IServiceCollection AddServicesConfig(this IServiceCollection services, IConfiguration config)
         {
-            services.AddControllers();
+            services.AddControllers().AddJsonOptions(o =>
+            {
+                o.JsonSerializerOptions.IncludeFields = true;
+            });
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -40,7 +43,7 @@ namespace socialmediaAPI.Configs
         {
             //services.AddSingleton<IConversationRepository, ConversationRepository>();
             //services.AddSingleton<IMessageLogRepository, MessageLogRepository>();
-            services.AddSingleton<IUserRepository, UserRepository>();
+            services.AddTransient<IUserRepository, UserRepository>();
             services.AddSingleton<IPostRepository, PostRepository>();
             services.AddSingleton<ICommentLogRepository, CommentLogRepository>();
             return services;
