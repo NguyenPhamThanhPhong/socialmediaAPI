@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson.IO;
 using socialmediaAPI.Configs;
 using socialmediaAPI.Models.DTO;
 using socialmediaAPI.Models.Embeded.User;
@@ -29,7 +31,6 @@ namespace socialmediaAPI.Controllers
             _cloudinaryHandler = cloudinaryHandler;
             _userFolderName = cloudinaryConfigs.UserFolderName;
         }
-
         [HttpGet("/viewDTO/{id}")]
         public async Task<IActionResult> GetUserDTO(string id)
         {
@@ -39,6 +40,7 @@ namespace socialmediaAPI.Controllers
             var userDTO = _mapper.Map<UserDTO>(user);
             return Ok(user);
         }
+
         [HttpPut("/update-email/{id}")]
         public async Task<IActionResult> UpdateEmail(string id, [FromBody] string email)
         {
@@ -48,7 +50,6 @@ namespace socialmediaAPI.Controllers
             await _userRepository.UpdatebyParameters(id, new List<UpdateParameter> { parameter});
             return Ok("updated");
         }
-
         [HttpPut("/update-password/{id}")]
         public async Task<IActionResult> UpdatePassword(string id, [FromBody] string password)
         {
@@ -57,6 +58,13 @@ namespace socialmediaAPI.Controllers
             var parameter = new UpdateParameter(Models.Entities.User.GetFieldName(u => u.AuthenticationInfo.Password), password, UpdateAction.set);
             await _userRepository.UpdatebyParameters(id, new List<UpdateParameter> { parameter });
             return Ok("updated");
+        }
+
+        [HttpPut("/tests401")]
+        [Authorize]
+        public async Task<IActionResult> Test()
+        {
+            return Ok("");
         }
 
         [HttpPut("/update-avatar/{id}")]
@@ -82,13 +90,17 @@ namespace socialmediaAPI.Controllers
             return Ok("updated");
         }
         [HttpPut("/update-personal-info/{id}")]
+        [Authorize]
         public async Task<IActionResult> UpdatePersonalInfo(string id, [FromForm] UpdateUserPersonalInformationRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest("invalid modelstate");
             var personalInfo = request.ConvertToPersonalInformation();
-            var dict = await _cloudinaryHandler.UploadImages(new List<IFormFile> { request.AvatarFile }, _userFolderName); ;
-            personalInfo.AvatarUrl = dict.Values.FirstOrDefault();
+            if(request.AvatarFile != null)
+            {
+                var dict = await _cloudinaryHandler.UploadImages(new List<IFormFile> { request.AvatarFile }, _userFolderName); ;
+                personalInfo.AvatarUrl = dict.Values.FirstOrDefault();
+            }
             var parameter = new UpdateParameter(Models.Entities.User.GetFieldName(u => u.PersonalInfo),personalInfo,UpdateAction.set);
             return Ok(parameter);
 
@@ -98,8 +110,8 @@ namespace socialmediaAPI.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest("invalid modelstate");
-            await _userRepository.UpdatebyParameters(id, parameters);
-            return Ok("updated");
+            await _userRepository.UpdateStringFields(id,parameters);
+            return Ok(parameters[0].Value);
         }
 
         [HttpDelete("/delete-user/{id}")]

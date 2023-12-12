@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.Serializers;
 using socialmediaAPI.Models.Embeded.User;
 using System.Linq.Expressions;
 
@@ -13,7 +14,6 @@ namespace socialmediaAPI.Models.Entities
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string ID { get; set; }
-
         public bool IsMailConfirmed { get; set; }
         public AuthenticationInformation AuthenticationInfo { get; set; }
         public PersonalInformation PersonalInfo { get; set; }

@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Bson.Serialization.Serializers;
+using MongoDB.Bson.Serialization;
+using Newtonsoft.Json.Linq;
 using socialmediaAPI.Repositories.Interface;
 using socialmediaAPI.Repositories.Repos;
 using socialmediaAPI.Services.Authentication;
@@ -7,6 +10,10 @@ using socialmediaAPI.Services.CloudinaryService;
 using socialmediaAPI.Services.SMTP;
 using socialmediaAPI.Services.Validators;
 using System.Text;
+using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Bson.Serialization;
+using Newtonsoft.Json.Linq;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace socialmediaAPI.Configs
 {
@@ -37,6 +44,8 @@ namespace socialmediaAPI.Configs
 
             databaseConfigs.SetupDatabase();
             services.AddSingleton(databaseConfigs);
+            BsonSerializer.RegisterSerializer(new ObjectSerializer());
+
             return services;
         }
         public static IServiceCollection ConfigRepositories(this IServiceCollection services, IConfiguration config)
@@ -58,7 +67,8 @@ namespace socialmediaAPI.Configs
             {
                 options.TokenValidationParameters = new TokenValidationParameters()
                 {
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenConfiguration.AccessTokenSecret)),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                        tokenConfiguration.AccessTokenSecret)),
                     ValidIssuer = tokenConfiguration.Issuer,
                     ValidAudience = tokenConfiguration.Audience,
                     ValidateIssuer = true,

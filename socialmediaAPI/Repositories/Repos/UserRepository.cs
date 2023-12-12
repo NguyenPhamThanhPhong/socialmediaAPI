@@ -58,7 +58,11 @@ namespace socialmediaAPI.Repositories.Repos
             List<UpdateDefinition<User>> subUpdates = new List<UpdateDefinition<User>>();
             foreach (var parameter in parameters)
             {
-                var myValue = parameter.Value;
+                object? myValue;
+                if (parameter.Value is string)
+                    myValue = JsonSerializer.Serialize(parameter.Value);
+                myValue = parameter.Value;
+                Console.WriteLine(JsonSerializer.Serialize(myValue));
                 switch (parameter.updateAction)
                 {
                     case UpdateAction.set:
@@ -70,6 +74,30 @@ namespace socialmediaAPI.Repositories.Repos
                     case UpdateAction.pull:
                         subUpdates.Add(Builders<User>.Update.Pull(parameter.FieldName, myValue));
                         break;
+                }
+            }
+            var combinedUpdate = updateBuilder.Combine(subUpdates);
+            return _userCollection.UpdateOneAsync(filter, combinedUpdate);
+        }
+        public Task UpdateStringFields(string id, List<UpdateParameter> parameters)
+        {
+            var filter = Builders<User>.Filter.Eq(p => p.ID, id);
+            var updateBuilder = Builders<User>.Update;
+            List<UpdateDefinition<User>> subUpdates = new List<UpdateDefinition<User>>();
+            foreach (var parameter in parameters)
+            {
+                string? myValue = parameter.Value.ToString();
+                switch (parameter.updateAction)
+                {
+                    case UpdateAction.set:
+                        subUpdates.Add(Builders<User>.Update.Set(parameter.FieldName, myValue ?? null));
+                        continue;
+                    case UpdateAction.push:
+                        subUpdates.Add(Builders<User>.Update.Push(parameter.FieldName, myValue ?? null));
+                        continue;
+                    case UpdateAction.pull:
+                        subUpdates.Add(Builders<User>.Update.Pull(parameter.FieldName, myValue ?? null));
+                        continue;
                 }
             }
             var combinedUpdate = updateBuilder.Combine(subUpdates);

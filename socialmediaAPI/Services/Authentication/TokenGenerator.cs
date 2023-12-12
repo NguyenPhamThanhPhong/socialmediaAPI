@@ -17,7 +17,8 @@ namespace socialmediaAPI.Services.Authentication
         }
         public string GenerateAccessToken(User user)
         {
-            SecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenConfigs.AccessTokenSecret));
+            SecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                _tokenConfigs.AccessTokenSecret));
             SigningCredentials credential = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             List<Claim> claims = new List<Claim>()

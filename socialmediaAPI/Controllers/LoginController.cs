@@ -8,6 +8,7 @@ using socialmediaAPI.Models.DTO;
 using socialmediaAPI.Models.Entities;
 using socialmediaAPI.Repositories.Interface;
 using socialmediaAPI.RequestsResponses.Requests;
+using socialmediaAPI.Services.Authentication;
 using socialmediaAPI.Services.CloudinaryService;
 using socialmediaAPI.Services.SMTP;
 using socialmediaAPI.Services.Validators;
@@ -23,17 +24,19 @@ namespace socialmediaAPI.Controllers
         private readonly CloudinaryHandler _cloudinaryHandler;
         private readonly string _userFolderName;
         private readonly EmailUtil _emailUtil;
+        private readonly TokenGenerator _tokenGenerator;
 
 
         public LoginController(IUserRepository userRepository, UserValidator userValidator,
             CloudinaryHandler cloudinaryHandler, CloudinaryConfigs cloudinaryConfigs,
-            EmailUtil emailUtil)
+            EmailUtil emailUtil, TokenGenerator tokenGenerator)
         {
             _userRepository = userRepository;
             _userValidator = userValidator;
             _cloudinaryHandler = cloudinaryHandler;
             _userFolderName = cloudinaryConfigs.UserFolderName;
             _emailUtil = emailUtil;
+            _tokenGenerator = tokenGenerator;
         }
 
         [HttpPost("/register")]
@@ -51,13 +54,16 @@ namespace socialmediaAPI.Controllers
             var user = request.ConvertToUser();
             try
             {
-                var avatarSet = await _cloudinaryHandler.UploadImages(new List<IFormFile> { request.File }, _userFolderName);
-                user.PersonalInfo.AvatarUrl = avatarSet.Values.FirstOrDefault();
+                if(request.File!=null)
+                {
+                    var avatarSet = await _cloudinaryHandler.UploadImages(new List<IFormFile> { request.File }, _userFolderName);
+                    user.PersonalInfo.AvatarUrl = avatarSet.Values.FirstOrDefault();
+                }
                 await _userRepository.Create(user);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest("user already existed: \n"+ ex.Message);
             }
             return Ok(user);
         }
@@ -69,7 +75,14 @@ namespace socialmediaAPI.Controllers
             var user = await _userRepository.GetbyUsername(request.Username);
             if (user == null || !(user.AuthenticationInfo.Password == request.Password))
                 return BadRequest("Incorrect username or password");
-            return Ok(user);
+
+            string accessToken = _tokenGenerator.GenerateAccessToken(user);
+            //Response.Cookies.Append("access_token", accessToken, new CookieOptions
+            //{
+            //    HttpOnly = true,
+            //    Expires = DateTime.UtcNow.AddMinutes(120) // Cookie expiration time
+            //});
+            return Ok(accessToken);
         }
 
 

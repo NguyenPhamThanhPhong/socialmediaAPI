@@ -26,6 +26,7 @@ namespace socialmediaAPI.Configs
         public void SetupDatabase()
         {
             InstantiateCollections();
+            CreateUniqueIndex();
         }
 
         private void InstantiateCollections()
@@ -39,6 +40,13 @@ namespace socialmediaAPI.Configs
             ConversationCollection = MongoDtb.GetCollection<Conversation>(ConversationCollectionName);
             PostCollection = MongoDtb.GetCollection<Post>(PostCollectionName);
             CommentLogCollection = MongoDtb.GetCollection<CommentLog>(CommentLogCollectionName);
+        }
+        private void CreateUniqueIndex()
+        {
+            var indexKeysDefinition = Builders<User>.IndexKeys.Ascending(User.GetFieldName(u=>u.AuthenticationInfo.Username));
+            var indexOptions = new CreateIndexOptions { Unique = true };
+
+            UserCollection.Indexes.CreateOne(new CreateIndexModel<User>(indexKeysDefinition, indexOptions));
         }
     }
 }

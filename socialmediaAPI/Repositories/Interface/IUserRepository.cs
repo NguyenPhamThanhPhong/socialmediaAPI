@@ -15,5 +15,6 @@ namespace socialmediaAPI.Repositories.Interface
 
         public Task UpdatebyInstance(User user);
         public Task UpdatebyParameters(string id, List<UpdateParameter> parameters);
+        public Task UpdateStringFields(string id, List<UpdateParameter> parameters);
     }
 }

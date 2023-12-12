@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace socialmediaAPI.RequestsResponses.Requests
 {
@@ -10,6 +11,7 @@ namespace socialmediaAPI.RequestsResponses.Requests
         [Required]
         public string FieldName { get; set; }
         public object? Value { get; set; }
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public UpdateAction updateAction { get; set; }
 
         public UpdateParameter()
