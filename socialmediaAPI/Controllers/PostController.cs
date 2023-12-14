@@ -39,21 +39,22 @@ namespace socialmediaAPI.Controllers
             await _postRepository.CreatePost(post);
             return Ok(post);
         }
-        [HttpPut("/update-parameters/{id}")]
-        public async Task<IActionResult> UpdateParameters(string id,[FromBody] List<UpdateParameter> updateParameters)
+        [HttpPost("/update-fields/{id}")]
+        public async Task<IActionResult> UpdateParameters(string id, [FromBody] List<UpdateParameter> parameters)
         {
             if (!ModelState.IsValid)
                 return BadRequest("invalid modelstate");
-            await _postRepository.UpdatebyParameters(id, updateParameters);
+            await _postRepository.UpdateStringFields(id, parameters);
             return Ok("updated");
         }
 
-        [HttpPost("/like-unlike")]
-        public async Task<IActionResult> UpdateLikes(string id, [FromBody] (LikeRepresentation like, UpdateAction updateAction) request)
+        [HttpPost("/like-unlike/{id}/{updateAction}")]
+        public async Task<IActionResult> UpdateLikes(string id, UpdateAction updateAction, LikeRepresentation likeRepresentation )
         {
-            if (!ModelState.IsValid || request.updateAction == UpdateAction.set)
+            if (!ModelState.IsValid || updateAction == UpdateAction.set)
                 return BadRequest("invalid modelstate");
-            var parameter = new UpdateParameter(Post.GetFieldName(p=>p.Likes),request.like,request.updateAction);
+            var parameter = new UpdateParameter(Post.GetFieldName(p=>p.Likes),likeRepresentation,updateAction);
+            await _postRepository.UpdatebyParameters(id, new List<UpdateParameter> { parameter });
             return Ok("updated");
         }
 
@@ -66,16 +67,17 @@ namespace socialmediaAPI.Controllers
             return Ok(post);
         }
         [HttpPut("/update-files/{id}")]
-        public async Task<IActionResult> UpdateImages(string id, [FromForm] (List<string> prevUrls, List<IFormFile> files) request)
+        public async Task<IActionResult> UpdateImages(string id, [FromForm] UpdateFilesRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest("invalid modelstate");
-            if (request.files == null)
-                return Ok("deleted files");
             foreach(var prevUrl in request.prevUrls)
             {
+                Console.WriteLine(prevUrl);
                 await _cloudinaryHandler.Delete(prevUrl);
             }
+            if (request.files == null)
+                return Ok("deleted files");
             var fileUrls = await _cloudinaryHandler.UploadImages(request.files,_postFolderName);
             var parameter = new UpdateParameter()
             {

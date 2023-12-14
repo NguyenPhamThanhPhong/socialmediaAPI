@@ -72,13 +72,15 @@ namespace socialmediaAPI.Services.CloudinaryService
                 var deletionResult = await _cloudinary.DestroyAsync(deletionParams);
 
                 // Check if the deletion was successful
-                if (deletionResult.Result == "ok")
+                if (deletionResult.Result.ToLower() == "ok")
                 {
                     Console.WriteLine($"File deleted successfully. Public ID: {publicId}");
                 }
                 else
                 {
-                    Console.WriteLine($"Failed to delete file. Error: {deletionResult.Error.Message}");
+                    Console.WriteLine($"failed Public ID: {publicId}");
+                    Console.WriteLine($"Failed to delete file. Error: {deletionResult.Result}");
+                    Console.WriteLine($"Failed to delete file. Error: {deletionResult.Error?.Message}");
                 }
             }
             else
@@ -87,28 +89,27 @@ namespace socialmediaAPI.Services.CloudinaryService
             }
         }
 
-        //public async Task DeleteMany(List<string> Urls)
-        //{
-        //    List<string?> publicIds = new List<string?>();
-        //    foreach(var url in Urls)
-        //    {
-        //        if(!string.IsNullOrEmpty(url))
-        //            publicIds.Add(GetPublicIdFromUrl(url));
-        //    }
-
-        //}
 
         private string? GetPublicIdFromUrl(string imageUrl)
         {
-            // Example Cloudinary URL format: https://res.cloudinary.com/{cloudName}/image/upload/{publicId}.{format}
+            // Example Cloudinary URL format: https://res.cloudinary.com/{cloudName}/image/upload/v{version}/{publicId}.{format}
             var uri = new System.Uri(imageUrl);
             var segments = uri.Segments;
 
-            if (segments.Length >= 3)
+            // Check if there are at least five segments (assuming the URL structure)
+            if (segments.Length >= 5)
             {
-                // Extract the public ID from the URL
-                var publicIdWithFormat = segments[segments.Length - 1];
-                var publicId = Path.GetFileNameWithoutExtension(publicIdWithFormat);
+                // Extract the public ID from the URL (considering the version and file extension)
+                var publicIdWithVersionAndFormat = segments[segments.Length - 1];
+                var publicId = Path.GetFileNameWithoutExtension(publicIdWithVersionAndFormat);
+
+                // If there is a version, remove it from the public ID
+                var version = segments[segments.Length - 3];
+                if (version.StartsWith("v"))
+                {
+                    publicId = publicId.Replace(version, "");
+                }
+
                 return publicId;
             }
 

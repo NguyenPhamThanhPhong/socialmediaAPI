@@ -7,8 +7,6 @@ namespace socialmediaAPI.Models.Embeded.Post
     public class LikeRepresentation
     {
         public string UserId { get; set; }
-        public string Name { get; set; }
-        public string AvatarUrl { get; set; }
-        public Emoji Likes { get; set; }
+        public Emoji Emo { get; set; }
     }
 }

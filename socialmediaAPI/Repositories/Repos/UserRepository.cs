@@ -67,13 +67,13 @@ namespace socialmediaAPI.Repositories.Repos
                 {
                     case UpdateAction.set:
                         subUpdates.Add(Builders<User>.Update.Set(parameter.FieldName, myValue));
-                        break;
+                        continue;
                     case UpdateAction.push:
                         subUpdates.Add(Builders<User>.Update.Push(parameter.FieldName, myValue));
-                        break;
+                        continue;
                     case UpdateAction.pull:
                         subUpdates.Add(Builders<User>.Update.Pull(parameter.FieldName, myValue));
-                        break;
+                        continue;
                 }
             }
             var combinedUpdate = updateBuilder.Combine(subUpdates);

@@ -7,11 +7,10 @@ namespace socialmediaAPI.RequestsResponses.Requests
     {
         public string? Name { get; set; }
         public string? prevAvatar { get; set; }
-        public IFormFile AvatarFile { get; set; }
+        public IFormFile? AvatarFile { get; set; }
         public DateTime? DateofBirth { get; set; }
-        public int Age { get; set; }
         public string? Favorites { get; set; }
-        public string Biography { get; set; }
+        public string? Biography { get; set; }
 
         public PersonalInformation ConvertToPersonalInformation()
         {
@@ -19,7 +18,7 @@ namespace socialmediaAPI.RequestsResponses.Requests
             {
                 Name = Name,
                 AvatarUrl = "",
-                Age= Age,
+                DateofBirth = DateofBirth,
                 Favorites= Favorites,
                 Biography= Biography
             };

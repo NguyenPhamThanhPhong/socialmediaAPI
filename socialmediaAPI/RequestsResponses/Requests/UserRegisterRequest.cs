@@ -18,7 +18,8 @@ namespace socialmediaAPI.RequestsResponses.Requests
         public string Email { get; set; }
         public string Name { get; set; }
         public DateTime DateOfBirth { get; set; }
-        public string Favorite { get; set; }
+        public string? Favorite { get; set; }
+        public string Biography { get; set; }
 
         public IFormFile? File { get; set; }
 
@@ -37,7 +38,9 @@ namespace socialmediaAPI.RequestsResponses.Requests
                 {
                     Name = Name,
                     DateofBirth = this.DateOfBirth,
-                    Favorites = Favorite
+                    Favorites = Favorite,
+                    Biography = Biography,
+                    AvatarUrl = ""
                 }
             };
         }

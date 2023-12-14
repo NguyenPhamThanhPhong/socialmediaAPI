@@ -46,7 +46,7 @@ namespace socialmediaAPI.Controllers
             {
                 return BadRequest("invalid modelstate");
             }
-            if( await _userValidator.IsValidEmail(request.Email))
+            if(! await _emailUtil.SendEmailAsync(request.Email,$"Welcome {request.Name} to PhongBook","welcome..."))
             {
                 return BadRequest("email doesn't exists");
             }

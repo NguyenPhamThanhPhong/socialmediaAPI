@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using socialmediaAPI.Models.DTO;
+using socialmediaAPI.Models.Embeded.Post;
 using socialmediaAPI.Models.Entities;
+using socialmediaAPI.RequestsResponses.Requests;
 
 namespace socialmediaAPI.Configs
 {
@@ -9,6 +11,7 @@ namespace socialmediaAPI.Configs
         public AutomapperConfigs()
         {
             CreateMap<User, UserDTO>();
+            CreateMap<UpdateLikeRequest, LikeRepresentation>();
         }
     }
 }

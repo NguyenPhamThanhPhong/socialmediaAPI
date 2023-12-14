@@ -38,8 +38,9 @@ namespace socialmediaAPI.Controllers
                 return BadRequest("invalid id");
             var user = await _userRepository.GetbyId(id);
             var userDTO = _mapper.Map<UserDTO>(user);
-            return Ok(user);
+            return Ok(userDTO);
         }
+        #region email-password
 
         [HttpPut("/update-email/{id}")]
         public async Task<IActionResult> UpdateEmail(string id, [FromBody] string email)
@@ -59,16 +60,10 @@ namespace socialmediaAPI.Controllers
             await _userRepository.UpdatebyParameters(id, new List<UpdateParameter> { parameter });
             return Ok("updated");
         }
+        #endregion
 
-        [HttpPut("/tests401")]
-        [Authorize]
-        public async Task<IActionResult> Test()
-        {
-            return Ok("");
-        }
-
-        [HttpPut("/update-avatar/{id}")]
-        public async Task<IActionResult> UpdateAvatar(string id, [FromForm] (string prevUrl, IFormFile file) formData)
+        [HttpPut("/update-avatar/{id}/{prevUrl}")]
+        public async Task<IActionResult> UpdateAvatar(string id, string prevUrl , [FromForm] IFormFile file)
         {
             if (!ModelState.IsValid)
                 return BadRequest("invalid modelstate");
@@ -77,31 +72,33 @@ namespace socialmediaAPI.Controllers
                 FieldName = Models.Entities.User.GetFieldName(u => u.PersonalInfo.AvatarUrl),
                 updateAction = UpdateAction.set
             };
-            if (formData.file == null)
+            if (file == null)
             {
-                if(!string.IsNullOrEmpty(formData.prevUrl))
-                    await _cloudinaryHandler.Delete(formData.prevUrl);
+                if(!string.IsNullOrEmpty(prevUrl))
+                    await _cloudinaryHandler.Delete(prevUrl);
                 avatarParameter.Value = null;
             }
             else
-                avatarParameter.Value = await _cloudinaryHandler.UploadSingleImage(formData.file, _userFolderName);
+                avatarParameter.Value = await _cloudinaryHandler.UploadSingleImage(file, _userFolderName);
 
             await _userRepository.UpdatebyParameters(id,new List<UpdateParameter> { avatarParameter });
             return Ok("updated");
         }
         [HttpPut("/update-personal-info/{id}")]
-        [Authorize]
         public async Task<IActionResult> UpdatePersonalInfo(string id, [FromForm] UpdateUserPersonalInformationRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest("invalid modelstate");
             var personalInfo = request.ConvertToPersonalInformation();
-            if(request.AvatarFile != null)
+            if (!string.IsNullOrEmpty(request.prevAvatar))
+                await _cloudinaryHandler.Delete(request.prevAvatar);
+            if (request.AvatarFile != null)
             {
                 var dict = await _cloudinaryHandler.UploadImages(new List<IFormFile> { request.AvatarFile }, _userFolderName); ;
                 personalInfo.AvatarUrl = dict.Values.FirstOrDefault();
             }
             var parameter = new UpdateParameter(Models.Entities.User.GetFieldName(u => u.PersonalInfo),personalInfo,UpdateAction.set);
+            await _userRepository.UpdatebyParameters(id,new List<UpdateParameter> { parameter});
             return Ok(parameter);
 
         }
@@ -111,7 +108,7 @@ namespace socialmediaAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest("invalid modelstate");
             await _userRepository.UpdateStringFields(id,parameters);
-            return Ok(parameters[0].Value);
+            return Ok("updated");
         }
 
         [HttpDelete("/delete-user/{id}")]

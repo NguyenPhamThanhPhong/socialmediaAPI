@@ -71,19 +71,39 @@ namespace socialmediaAPI.Repositories.Repos
                 switch (parameter.updateAction)
                 {
                     case UpdateAction.set:
-                        var myobj = new
-                        {
-                            field1 = "abc",
-                            field2 = "adssss"
-                        };
-                        subUpdates.Add(Builders<Post>.Update.Set("Likes", myobj ));
-                        break;
+                        subUpdates.Add(Builders<Post>.Update.Set(parameter.FieldName, parameter.Value ));
+                        continue;
                     case UpdateAction.push:
                         subUpdates.Add(Builders<Post>.Update.Push(parameter.FieldName, parameter.Value));
-                        break;
+                        continue;
                     case UpdateAction.pull:
                         subUpdates.Add(Builders<Post>.Update.Pull(parameter.FieldName, parameter.Value));
-                        break;
+                        continue;
+                }
+            }
+            var combinedUpdate = updateBuilder.Combine(subUpdates);
+            return _postCollection.UpdateOneAsync(filter, combinedUpdate);
+        }
+
+        public Task UpdateStringFields(string id, List<UpdateParameter> parameters)
+        {
+            var filter = Builders<Post>.Filter.Eq(p => p.Id, id);
+            var updateBuilder = Builders<Post>.Update;
+            List<UpdateDefinition<Post>> subUpdates = new List<UpdateDefinition<Post>>();
+
+            foreach (var parameter in parameters)
+            {
+                switch (parameter.updateAction)
+                {
+                    case UpdateAction.set:
+                        subUpdates.Add(Builders<Post>.Update.Set(parameter.FieldName, parameter.Value?.ToString()));
+                        continue;
+                    case UpdateAction.push:
+                        subUpdates.Add(Builders<Post>.Update.Push(parameter.FieldName, parameter.Value?.ToString()));
+                        continue;
+                    case UpdateAction.pull:
+                        subUpdates.Add(Builders<Post>.Update.Pull(parameter.FieldName, parameter.Value?.ToString()));
+                        continue;
                 }
             }
             var combinedUpdate = updateBuilder.Combine(subUpdates);
