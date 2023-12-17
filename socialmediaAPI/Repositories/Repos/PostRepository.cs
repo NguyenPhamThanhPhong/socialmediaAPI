@@ -48,9 +48,9 @@ namespace socialmediaAPI.Repositories.Repos
 
         }
 
-        public Task<Post> GetbyId(string id)
+        public Task<Post> GetbyIds(IEnumerable<string> ids)
         {
-            var filter = Builders<Post>.Filter.Eq(p => p.Id, id);
+            var filter = Builders<Post>.Filter.In(p => p.Id, ids);
             return _postCollection.Find(filter).FirstOrDefaultAsync();
         }
 

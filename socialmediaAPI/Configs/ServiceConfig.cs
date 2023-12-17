@@ -2,7 +2,6 @@
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Bson.Serialization;
-using Newtonsoft.Json.Linq;
 using socialmediaAPI.Repositories.Interface;
 using socialmediaAPI.Repositories.Repos;
 using socialmediaAPI.Services.Authentication;
@@ -11,8 +10,6 @@ using socialmediaAPI.Services.SMTP;
 using socialmediaAPI.Services.Validators;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
-using MongoDB.Bson.Serialization;
-using Newtonsoft.Json.Linq;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace socialmediaAPI.Configs
@@ -99,6 +96,16 @@ namespace socialmediaAPI.Configs
             services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+            });
+            //CORS allow all hosts to call to
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.WithOrigins("http://localhost:3000")
+                           .AllowAnyHeader()
+                           .AllowAnyMethod();
+                });
             });
             return services;
         }

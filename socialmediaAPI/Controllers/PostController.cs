@@ -58,24 +58,25 @@ namespace socialmediaAPI.Controllers
             return Ok("updated");
         }
 
-        [HttpGet("/view/{id}")]
-        public async Task<IActionResult> Get(string id)
+        [HttpPost("/view")]
+        public async Task<IActionResult> Get([FromBody] List<string> ids)
         {
             if (!ModelState.IsValid)
                 return BadRequest("invalid modelstate");
-            var post = await _postRepository.GetbyId(id);
-            return Ok(post);
+            var posts = await _postRepository.GetbyIds(ids);
+            return Ok(posts);
         }
         [HttpPut("/update-files/{id}")]
         public async Task<IActionResult> UpdateImages(string id, [FromForm] UpdateFilesRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest("invalid modelstate");
-            foreach(var prevUrl in request.prevUrls)
-            {
-                Console.WriteLine(prevUrl);
-                await _cloudinaryHandler.Delete(prevUrl);
-            }
+            if(request.prevUrls!=null)
+                foreach(var prevUrl in request.prevUrls)
+                {
+                    Console.WriteLine(prevUrl);
+                    await _cloudinaryHandler.Delete(prevUrl);
+                }
             if (request.files == null)
                 return Ok("deleted files");
             var fileUrls = await _cloudinaryHandler.UploadImages(request.files,_postFolderName);
@@ -94,10 +95,11 @@ namespace socialmediaAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest("invalid modelstate");
             var deleted = await _postRepository.Delete(id);
-            foreach(var item in deleted.FileUrls)
-            {
-                await _cloudinaryHandler.Delete(item.Value);
-            }
+            if(deleted.FileUrls!=null)
+                foreach (var item in deleted.FileUrls)
+                {
+                    await _cloudinaryHandler.Delete(item.Value);
+                }
             return Ok(("deleted", deleted));
         }
 

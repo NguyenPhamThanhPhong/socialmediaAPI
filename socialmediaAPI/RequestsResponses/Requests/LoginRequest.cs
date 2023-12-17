@@ -10,7 +10,6 @@ namespace socialmediaAPI.RequestsResponses.Requests
         [Required]
         [StringLength(32, MinimumLength = 4, ErrorMessage = "The {0} must be at least {2} and at most {1} characters long.")]
         public string Password { get; set; }
-        //[EmailAddress]
-        //public string Email { get; set; }
+
     }
 }
