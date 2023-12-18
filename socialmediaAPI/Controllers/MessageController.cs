@@ -39,6 +39,18 @@ namespace socialmediaAPI.Controllers
             return Ok(message);
         }
 
+        [HttpDelete("/delete-message")]
+        public async Task<IActionResult> Edit(string id)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
+            var deletedMessage  = await _messageRepository.Delete(id);
+            if (deletedMessage.FileUrls != null)
+                foreach (var item in deletedMessage.FileUrls)
+                    await _cloudinaryHandler.Delete(item.Value);
+
+            return Ok($"delete state is {deletedMessage!=null}");
+        }
 
     }
 }

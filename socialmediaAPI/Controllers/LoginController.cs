@@ -87,8 +87,6 @@ namespace socialmediaAPI.Controllers
             return Ok(user);
         }
 
-
-
         [HttpPost("/send-mail-verification")]
         public async Task<IActionResult> SendVerification([FromBody] LoginRequest request)
         {
