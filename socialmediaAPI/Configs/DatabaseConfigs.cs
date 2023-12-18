@@ -2,6 +2,7 @@
 using MongoDB.Driver;
 using socialmediaAPI.Models.Entities;
 
+#pragma warning disable CS8618
 namespace socialmediaAPI.Configs
 {
     public class DatabaseConfigs
@@ -9,7 +10,7 @@ namespace socialmediaAPI.Configs
         public string ConnectionString { get; set; }
         public string DatabaseName { get; set; }
         public string UserCollectionName { get; set; }
-        public string MessageLogCollectionName { get; set; }
+        public string MessageCollectionName { get; set; }
         public string ConversationCollectionName { get; set; }
         public string PostCollectionName { get; set; }
         public string CommentLogCollectionName { get; set; }
@@ -18,7 +19,7 @@ namespace socialmediaAPI.Configs
         public IMongoDatabase? MongoDtb { get; private set; }
 
         public IMongoCollection<User> UserCollection { get; set; }
-        public IMongoCollection<MessageLog> MessageLogCollection { get; set; }
+        public IMongoCollection<Message> MessageCollection { get; set; }
         public IMongoCollection<Conversation> ConversationCollection { get; set; }
         public IMongoCollection<Post> PostCollection { get; set; }
         public IMongoCollection<CommentLog> CommentLogCollection { get; set; }
@@ -36,7 +37,7 @@ namespace socialmediaAPI.Configs
 
 
             UserCollection = MongoDtb.GetCollection<User>(UserCollectionName);
-            MessageLogCollection = MongoDtb.GetCollection<MessageLog>(MessageLogCollectionName);
+            MessageCollection = MongoDtb.GetCollection<Message>(MessageCollectionName);
             ConversationCollection = MongoDtb.GetCollection<Conversation>(ConversationCollectionName);
             PostCollection = MongoDtb.GetCollection<Post>(PostCollectionName);
             CommentLogCollection = MongoDtb.GetCollection<CommentLog>(CommentLogCollectionName);

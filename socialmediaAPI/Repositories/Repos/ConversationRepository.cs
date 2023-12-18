@@ -5,6 +5,7 @@ using socialmediaAPI.Models.Entities;
 using socialmediaAPI.Repositories.Interface;
 using socialmediaAPI.RequestsResponses.Requests;
 using Org.BouncyCastle.Crypto;
+using socialmediaAPI.Configs;
 
 namespace socialmediaAPI.Repositories.Repos
 {
@@ -12,16 +13,21 @@ namespace socialmediaAPI.Repositories.Repos
     {
         private IMongoCollection<Conversation> _conversationCollection;
         private IMongoCollection<User> _userCollection;
+        private IMongoCollection<Message> _messageCollection;
 
-        public ConversationRepository(IMongoCollection<Conversation> conversationCollection, IMongoCollection<User> userCollection)
+        public ConversationRepository(DatabaseConfigs databaseConfigs)
         {
-            _conversationCollection = conversationCollection;
-            _userCollection = userCollection;
+            _conversationCollection = databaseConfigs.ConversationCollection;
+            _userCollection = databaseConfigs.UserCollection;
+            _messageCollection = databaseConfigs.MessageCollection;
         }
 
-        public Task Create(Conversation conversation)
+        public async Task Create(Conversation conversation)
         {
-            return _conversationCollection.InsertOneAsync(conversation);
+            await _conversationCollection.InsertOneAsync(conversation);
+            var filter = Builders<User>.Filter.Eq(u => u.ConverationIds, conversation.ParticipantIds);
+            var update = Builders<User>.Update.Push(u => u.ConverationIds, conversation.ID);
+            await _userCollection.UpdateManyAsync(filter, update);
         }
 
         public Task<Conversation> Delete(string id)

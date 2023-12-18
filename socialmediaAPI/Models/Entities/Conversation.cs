@@ -8,25 +8,28 @@ namespace socialmediaAPI.Models.Entities
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string ID { get; set; }
-        public List<string>? adminID { get; set; }
+        public string? Name { get; set; }
+        public string? AvatarUrl { get; set; }
+
+        public List<string>? AdminID { get; set; }
         public List<string>? ParticipantIds { get; set; }
         public bool IsGroup { get; set; }
         public List<string>? Blockers { get; set; }
         public Dictionary<string,string> Nicknames { get; set; }
         public MessageDisplay RecentMessage { get; set; }
-        public List<string> MessageLogIds { get; set; }
+        public List<string> MessageIds { get; set; }
 
         public Conversation()
         {
             ID = string.Empty;
-            adminID = new List<string>();
+            AdminID = new List<string>();
             ParticipantIds = new List<string>();
+            IsGroup = false;
             Blockers = new List<string>();
             Nicknames = new Dictionary<string,string>();
             RecentMessage = new MessageDisplay();
-            MessageLogIds = new List<string>();
+            MessageIds = new List<string>();
         }
-
     }
     public class MessageDisplay
     {

@@ -47,11 +47,11 @@ namespace socialmediaAPI.Configs
         }
         public static IServiceCollection ConfigRepositories(this IServiceCollection services, IConfiguration config)
         {
-            //services.AddSingleton<IConversationRepository, ConversationRepository>();
-            //services.AddSingleton<IMessageLogRepository, MessageLogRepository>();
+            services.AddTransient<IConversationRepository, ConversationRepository>();
+            services.AddTransient<IMessageRepository, MessageRepository>();
             services.AddTransient<IUserRepository, UserRepository>();
-            services.AddSingleton<IPostRepository, PostRepository>();
-            services.AddSingleton<ICommentLogRepository, CommentLogRepository>();
+            services.AddTransient<IPostRepository, PostRepository>();
+            services.AddTransient<ICommentLogRepository, CommentLogRepository>();
             return services;
         }
         public static IServiceCollection ConfigAuthentication(this IServiceCollection services, IConfiguration config)

@@ -77,12 +77,14 @@ namespace socialmediaAPI.Controllers
                 return BadRequest("Incorrect username or password");
 
             string accessToken = _tokenGenerator.GenerateAccessToken(user);
-            //Response.Cookies.Append("access_token", accessToken, new CookieOptions
-            //{
-            //    HttpOnly = true,
-            //    Expires = DateTime.UtcNow.AddMinutes(120) // Cookie expiration time
-            //});
-            return Ok(accessToken);
+            CookieOptions cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Expires = DateTime.UtcNow.AddMinutes(120) // Cookie expiration time
+            };
+            Response.Cookies.Append("access_token", accessToken, cookieOptions );
+            Response.Cookies.Append("userID", user.ID, cookieOptions);
+            return Ok(user);
         }
 
 

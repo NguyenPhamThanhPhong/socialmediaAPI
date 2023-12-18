@@ -22,6 +22,7 @@ namespace socialmediaAPI.Models.Entities
         public List<string> FriendIds { get; set; }
         public List<string> BlockedIds { get; set; }
         public List<string> PostIds { get; set; }
+        public List<string> ConverationIds { get; set; }
         public List<Notification> Notifications { get; set; }
         public VerificationTicket EmailVerification { get; set; }
         public User()

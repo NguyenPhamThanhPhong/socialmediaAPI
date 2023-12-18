@@ -12,6 +12,8 @@ namespace socialmediaAPI.Configs
         {
             CreateMap<User, UserDTO>();
             CreateMap<UpdateLikeRequest, LikeRepresentation>();
+            CreateMap<ConversationCreateRequest, Conversation>();
+            CreateMap<MessageCreateRequest, Message>();
         }
     }
 }
