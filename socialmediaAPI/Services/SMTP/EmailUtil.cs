@@ -42,7 +42,6 @@ namespace socialmediaAPI.Services.SMTP
                 Console.WriteLine("end ------------");
                 return false;
             }
-
         }
 
         public async Task<bool> SendEmail(string recipientEmail, string subject, string body)

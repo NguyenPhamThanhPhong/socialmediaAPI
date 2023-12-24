@@ -92,7 +92,7 @@ namespace socialmediaAPI.Configs
             services.AddAutoMapper(typeof(AutomapperConfigs));
             //Validator
             services.AddTransient<UserValidator>();
-            //
+            //JSON serialization
             services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
