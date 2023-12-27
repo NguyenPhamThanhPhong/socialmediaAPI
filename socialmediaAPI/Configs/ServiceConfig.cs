@@ -51,7 +51,6 @@ namespace socialmediaAPI.Configs
             services.AddTransient<IMessageRepository, MessageRepository>();
             services.AddTransient<IUserRepository, UserRepository>();
             services.AddTransient<IPostRepository, PostRepository>();
-            services.AddTransient<ICommentLogRepository, CommentLogRepository>();
             return services;
         }
         public static IServiceCollection ConfigAuthentication(this IServiceCollection services, IConfiguration config)

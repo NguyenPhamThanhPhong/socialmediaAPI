@@ -12,7 +12,7 @@ namespace socialmediaAPI.Repositories.Repos
     {
         private readonly IMongoCollection<User> _userCollection;
         private readonly IMongoCollection<Post> _postCollection;
-        private readonly IMongoCollection<CommentLog> _commentLogCollection;
+        private readonly IMongoCollection<Comment> _commentLogCollection;
         public PostRepository(DatabaseConfigs configuration)
         {
             _userCollection = configuration.UserCollection;
@@ -35,7 +35,7 @@ namespace socialmediaAPI.Repositories.Repos
             var updateUser = Builders<User>.Update.Pull(u => u.PostIds, deletedPost.Id);
             await _userCollection.UpdateOneAsync(filterUser, updateUser);
 
-            var filterCommentLog = Builders<CommentLog>.Filter.In(c => c.Id, deletedPost.CommentLogIds);
+            var filterCommentLog = Builders<Comment>.Filter.In(c => c.Id, deletedPost.CommentIds);
             await _commentLogCollection.DeleteManyAsync(filterCommentLog);
             return deletedPost;
         }

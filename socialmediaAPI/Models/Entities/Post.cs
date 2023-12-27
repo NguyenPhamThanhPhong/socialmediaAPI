@@ -19,12 +19,12 @@ namespace socialmediaAPI.Models.Entities
         public Dictionary<string, string?>? FileUrls { get; set; }
         public OwnerRepresentation Owner { get; set; }
         public List<LikeRepresentation> Likes { get; set; }
-        public List<string> CommentLogIds { get; set; }
+        public List<string> CommentIds { get; set; }
         public Post()
         {
             Id = string.Empty;
             Likes = new List<LikeRepresentation>();
-            CommentLogIds = new List<string>();
+            CommentIds = new List<string>();
         }
         public static string GetFieldName<T>(Expression<Func<Post, T>> expression)
         {

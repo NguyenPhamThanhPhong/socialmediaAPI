@@ -13,7 +13,7 @@ namespace socialmediaAPI.Configs
         public string MessageCollectionName { get; set; }
         public string ConversationCollectionName { get; set; }
         public string PostCollectionName { get; set; }
-        public string CommentLogCollectionName { get; set; }
+        public string CommentCollectionName { get; set; }
 
         public IMongoClient? MongoClient { get; private set; }
         public IMongoDatabase? MongoDtb { get; private set; }
@@ -22,7 +22,7 @@ namespace socialmediaAPI.Configs
         public IMongoCollection<Message> MessageCollection { get; set; }
         public IMongoCollection<Conversation> ConversationCollection { get; set; }
         public IMongoCollection<Post> PostCollection { get; set; }
-        public IMongoCollection<CommentLog> CommentLogCollection { get; set; }
+        public IMongoCollection<Comment> CommentCollection { get; set; }
 
         public void SetupDatabase()
         {
@@ -40,7 +40,7 @@ namespace socialmediaAPI.Configs
             MessageCollection = MongoDtb.GetCollection<Message>(MessageCollectionName);
             ConversationCollection = MongoDtb.GetCollection<Conversation>(ConversationCollectionName);
             PostCollection = MongoDtb.GetCollection<Post>(PostCollectionName);
-            CommentLogCollection = MongoDtb.GetCollection<CommentLog>(CommentLogCollectionName);
+            CommentCollection = MongoDtb.GetCollection<Comment>(CommentCollectionName);
         }
         private void CreateUniqueIndex()
         {

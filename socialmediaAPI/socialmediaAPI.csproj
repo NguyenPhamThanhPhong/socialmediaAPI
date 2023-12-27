@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\Embeded\MessageLog\**" />
+    <Content Remove="Models\Embeded\MessageLog\**" />
+    <EmbeddedResource Remove="Models\Embeded\MessageLog\**" />
+    <None Remove="Models\Embeded\MessageLog\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.1" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
     <PackageReference Include="CloudinaryDotNet" Version="1.23.0" />
@@ -18,7 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\Embeded\MessageLog\" />
     <Folder Include="RequestsResponses\Responses\" />
   </ItemGroup>
 

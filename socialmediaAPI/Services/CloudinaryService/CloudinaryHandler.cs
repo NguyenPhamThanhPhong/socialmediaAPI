@@ -99,7 +99,6 @@ namespace socialmediaAPI.Services.CloudinaryService
             // Check if there are at least five segments (assuming the URL structure)
             if (segments.Length >= 5)
             {
-                // Extract the public ID from the URL (considering the version and file extension)
                 var publicIdWithVersionAndFormat = segments[segments.Length - 1];
                 var publicId = Path.GetFileNameWithoutExtension(publicIdWithVersionAndFormat);
 
