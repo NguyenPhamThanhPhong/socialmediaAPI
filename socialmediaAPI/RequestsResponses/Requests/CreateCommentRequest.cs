@@ -10,5 +10,9 @@ namespace socialmediaAPI.RequestsResponses.Requests
         public string? UserId { get; set; }
         public DateTime? CommentTime { get; set; }
         public string? Content { get; set; }
+        public CreateCommentRequest()
+        {
+
+        }
     }
 }
