@@ -87,6 +87,12 @@ namespace socialmediaAPI.Controllers
             return Ok(user);
         }
 
+        [HttpGet("/login-auto")]
+        public async Task<IActionResult> Login()
+        {
+            return Ok("logged in");
+        }
+
         [HttpPost("/send-mail-verification")]
         public async Task<IActionResult> SendVerification([FromBody] LoginRequest request)
         {

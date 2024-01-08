@@ -24,7 +24,7 @@ namespace socialmediaAPI.Controllers
             _cloudinaryHandler = cloudinaryHandler;
             _postFolderName = cloudinaryConfigs.PostFolderName;
         }
-        [HttpPost("/create")]
+        [HttpPost("/post-create")]
         public async Task<IActionResult> Create([FromForm] CreatePostRequest request )
         {
             if (!ModelState.IsValid)
@@ -39,7 +39,7 @@ namespace socialmediaAPI.Controllers
             await _postRepository.CreatePost(post);
             return Ok(post);
         }
-        [HttpPost("/update-fields/{id}")]
+        [HttpPost("/post-update-string-field/{id}")]
         public async Task<IActionResult> UpdateParameters(string id, [FromBody] List<UpdateParameter> parameters)
         {
             if (!ModelState.IsValid)
@@ -48,7 +48,7 @@ namespace socialmediaAPI.Controllers
             return Ok("updated");
         }
 
-        [HttpPost("/like-unlike/{id}/{updateAction}")]
+        [HttpPost("/post-like-unlike/{id}/{updateAction}")]
         public async Task<IActionResult> UpdateLikes(string id, UpdateAction updateAction, LikeRepresentation likeRepresentation )
         {
             if (!ModelState.IsValid || updateAction == UpdateAction.set)
@@ -58,7 +58,7 @@ namespace socialmediaAPI.Controllers
             return Ok("updated");
         }
 
-        [HttpPost("/view")]
+        [HttpPost("/post-get-many")]
         public async Task<IActionResult> Get([FromBody] List<string> ids)
         {
             if (!ModelState.IsValid)
@@ -66,7 +66,7 @@ namespace socialmediaAPI.Controllers
             var posts = await _postRepository.GetbyIds(ids);
             return Ok(posts);
         }
-        [HttpPut("/update-files/{id}")]
+        [HttpPut("/post-update-files/{id}")]
         public async Task<IActionResult> UpdateImages(string id, [FromForm] UpdateFilesRequest request)
         {
             if (!ModelState.IsValid)

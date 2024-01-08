@@ -18,10 +18,6 @@ namespace socialmediaAPI.Configs
     {
         public static IServiceCollection AddServicesConfig(this IServiceCollection services, IConfiguration config)
         {
-            services.AddControllers().AddJsonOptions(o =>
-            {
-                o.JsonSerializerOptions.IncludeFields = true;
-            });
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -51,6 +47,7 @@ namespace socialmediaAPI.Configs
             services.AddTransient<IMessageRepository, MessageRepository>();
             services.AddTransient<IUserRepository, UserRepository>();
             services.AddTransient<IPostRepository, PostRepository>();
+            services.AddTransient<ICommentRepository, CommentRepository>();
             return services;
         }
         public static IServiceCollection ConfigAuthentication(this IServiceCollection services, IConfiguration config)
@@ -95,6 +92,7 @@ namespace socialmediaAPI.Configs
             services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+                options.JsonSerializerOptions.IncludeFields = true;
             });
             //CORS allow all hosts to call to
             services.AddCors(options =>

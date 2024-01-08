@@ -4,23 +4,24 @@ using System.Linq.Expressions;
 
 namespace socialmediaAPI.Models.Entities
 {
+    [BsonIgnoreExtraElements]
     public class Comment
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
-        public string UserId { get; set; }
-        public string? PostId { get; set; }
-        public string? ParentCommentId { get; set; }
-        public DateTime CommentTime { get; set; }
+        public string PostId { get; set; }
+        public string? ParentId { get; set; }
+        public string? UserId { get; set; }
+        public DateTime? CommentTime { get; set; }
         public string Content { get; set; }
-        public List<string>? ChildCommentIds { get; set; }
-
+        public List<string> ChildCommentIds { get; set; }
         public Comment()
         {
             Id = string.Empty;
             PostId = string.Empty;
             ChildCommentIds = new List<string>();
+            Content = string.Empty;
         }
         public static string GetFieldName<T>(Expression<Func<Comment, T>> expression)
         {

@@ -12,12 +12,12 @@ namespace socialmediaAPI.Repositories.Repos
     {
         private readonly IMongoCollection<User> _userCollection;
         private readonly IMongoCollection<Post> _postCollection;
-        private readonly IMongoCollection<Comment> _commentLogCollection;
+        private readonly IMongoCollection<Comment> _commentCollection;
         public PostRepository(DatabaseConfigs configuration)
         {
             _userCollection = configuration.UserCollection;
             _postCollection = configuration.PostCollection;
-            _commentLogCollection = configuration.CommentLogCollection;
+            _commentCollection = configuration.CommentCollection;
         }
         public async Task CreatePost(Post post)
         {
@@ -36,14 +36,13 @@ namespace socialmediaAPI.Repositories.Repos
             await _userCollection.UpdateOneAsync(filterUser, updateUser);
 
             var filterCommentLog = Builders<Comment>.Filter.In(c => c.Id, deletedPost.CommentIds);
-            await _commentLogCollection.DeleteManyAsync(filterCommentLog);
+            await _commentCollection.DeleteManyAsync(filterCommentLog);
             return deletedPost;
         }
 
         public Task<List<Post>> GetbyFilterString(string filterString)
         {
-            var filterDocument = BsonSerializer.Deserialize<BsonDocument>(filterString);
-            var filter = new BsonDocumentFilterDefinition<Post>(filterDocument);
+            var filter = BsonDocument.Parse(filterString);
             return _postCollection.Find(filter).ToListAsync();
 
         }

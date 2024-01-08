@@ -10,5 +10,6 @@
         public string UserFolderName { get; set; }
         public string PostFolderName { get; set; }
         public string MessageFolderName { get; set; }
+        public string CommentFolderName { get; set; }
     }
 }

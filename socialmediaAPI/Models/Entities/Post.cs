@@ -13,8 +13,7 @@ namespace socialmediaAPI.Models.Entities
         [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string Id { get; set; }
         public string Title { get; set; }
-        public string Contennt { get; set; }
-        public int CommentCounter { get; set; }
+        public string Content { get; set; }
         public string? SharedPost { get; set; }
         public Dictionary<string, string?>? FileUrls { get; set; }
         public OwnerRepresentation Owner { get; set; }

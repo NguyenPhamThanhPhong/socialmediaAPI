@@ -35,22 +35,16 @@ namespace socialmediaAPI.Repositories.Repos
             return _conversationCollection.FindOneAndDeleteAsync(u=>u.ID == id);
         }
 
-        public async Task<IEnumerable<Conversation>> GetbyFilterString(string filterString)
+        public async Task<IEnumerable<Conversation>> GetbyFilter(FilterDefinition<Conversation> filter)
         {
-            var filterDocument = BsonSerializer.Deserialize<BsonDocument>(filterString);
-            var filter = new BsonDocumentFilterDefinition<Post>(filterDocument);
-            return await _conversationCollection.Find(filterString).ToListAsync();
-        }
-
-        public async Task<IEnumerable<Conversation>> GetbyIds(IEnumerable<string> ids)
-        {
-            var filter = Builders<Conversation>.Filter.In(c => c.ID, ids);
             return await _conversationCollection.Find(filter).ToListAsync();
         }
 
-        public Task UpdatebyInstance(Conversation conversation)
+        public async Task<IEnumerable<Conversation>> GetbyIds(IEnumerable<string> ids,int skip)
         {
-            return _conversationCollection.ReplaceOneAsync(c=>c.ID==conversation.ID, conversation);  
+            var filter = Builders<Conversation>.Filter.In(c => c.ID, ids);
+            var sort = Builders<Conversation>.Sort.Descending(c => c.RecentMessage.RecentTime);
+            return await _conversationCollection.Find(filter).Sort(sort).Skip(skip).Limit(50).ToListAsync();
         }
 
         public Task UpdatebyParameters(string id, IEnumerable<UpdateParameter> parameters)
