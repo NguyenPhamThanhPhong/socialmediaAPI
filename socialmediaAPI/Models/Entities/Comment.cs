@@ -13,15 +13,17 @@ namespace socialmediaAPI.Models.Entities
         public string PostId { get; set; }
         public string? ParentId { get; set; }
         public string? UserId { get; set; }
-        public DateTime? CommentTime { get; set; }
+        public DateTime CommentTime { get; set; }
         public string Content { get; set; }
-        public List<string> ChildCommentIds { get; set; }
+        public Dictionary<string,string?> FileUrls { get; set; }
+        public bool isEdited { get; set; }
         public Comment()
         {
             Id = string.Empty;
             PostId = string.Empty;
-            ChildCommentIds = new List<string>();
+            CommentTime = DateTime.UtcNow;
             Content = string.Empty;
+            FileUrls = new Dictionary<string,string?>(); 
         }
         public static string GetFieldName<T>(Expression<Func<Comment, T>> expression)
         {

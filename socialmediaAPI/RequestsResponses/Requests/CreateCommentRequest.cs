@@ -8,11 +8,11 @@ namespace socialmediaAPI.RequestsResponses.Requests
         public string? PostId { get; set; }
         public string? ParentId { get; set; }
         public string? UserId { get; set; }
-        public DateTime? CommentTime { get; set; }
-        public string? Content { get; set; }
+        public string Content { get; set; }
+        public List<IFormFile>? Files { get; set; }
         public CreateCommentRequest()
         {
-
+            Content = string.Empty;
         }
     }
 }

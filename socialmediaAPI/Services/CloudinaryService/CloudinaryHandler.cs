@@ -7,6 +7,8 @@ namespace socialmediaAPI.Services.CloudinaryService
     public class CloudinaryHandler
     {
         private readonly Cloudinary _cloudinary;
+        private readonly string[] imageExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
+        private readonly string[] videoExtensions = { ".mp4", ".avi", ".mov", ".mkv" };
 
         public CloudinaryHandler(CloudinaryConfigs cloudinaryConfig)
         {
@@ -20,11 +22,16 @@ namespace socialmediaAPI.Services.CloudinaryService
 
         public async Task<Dictionary<string, string?>> UploadImages(List<IFormFile> files, string folderName)
         {
-            var result = new Dictionary<string, string?>();
+            var results = new Dictionary<string, string?>();
 
-            foreach (var file in files)
+            if (files == null)
+                return results;
+
+            var uploadTasks = files.Select(async file =>
             {
-                if (file.Length > 0)
+                var fileExtension = Path.GetExtension(Path.GetFileName(file.FileName)).ToLower();
+
+                if (imageExtensions.Contains(fileExtension))
                 {
                     using (var stream = file.OpenReadStream())
                     {
@@ -35,11 +42,45 @@ namespace socialmediaAPI.Services.CloudinaryService
                             Folder = folderName
                         };
                         var uploadResult = await _cloudinary.UploadAsync(uploadParams);
-                        result.Add(file.FileName, uploadResult.SecureUri.AbsoluteUri);
+                        if (uploadResult != null)
+                            results.Add(file.FileName, uploadResult.SecureUri.AbsoluteUri);
                     }
                 }
-            }
-            return result;
+                else if (videoExtensions.Contains(fileExtension))
+                {
+                    using (var stream = file.OpenReadStream())
+                    {
+                        string fileName = Guid.NewGuid().ToString();
+                        var uploadParams = new VideoUploadParams
+                        {
+                            File = new FileDescription(fileName, stream),
+                            Folder = folderName
+                        };
+                        var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                        if (uploadResult != null)
+                            results.Add(file.FileName, uploadResult.SecureUri.AbsoluteUri);
+                    }
+                }
+                else
+                {
+                    using (var stream = file.OpenReadStream())
+                    {
+                        string fileName = Guid.NewGuid().ToString();
+                        var uploadParams = new RawUploadParams
+                        {
+                            File = new FileDescription(fileName, stream),
+                            Folder = folderName
+                        };
+                        var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                        if (uploadResult != null)
+                            results.Add(file.FileName, uploadResult.SecureUri.AbsoluteUri);
+                    }
+                }
+            });
+
+            await Task.WhenAll(uploadTasks); // Wait for all tasks to complete
+
+            return results;
         }
         public async Task<string?> UploadSingleImage(IFormFile file, string folderName)
         {
@@ -88,31 +129,37 @@ namespace socialmediaAPI.Services.CloudinaryService
                 Console.WriteLine("Invalid Cloudinary URL");
             }
         }
-
-
-        private string? GetPublicIdFromUrl(string imageUrl)
+        public async Task DeleteMany(List<string?> urls)
         {
-            // Example Cloudinary URL format: https://res.cloudinary.com/{cloudName}/image/upload/v{version}/{publicId}.{format}
-            var uri = new System.Uri(imageUrl);
-            var segments = uri.Segments;
+            Task[] tasks = new Task[urls.Count];
+            foreach (string? url in urls)
+                tasks.Append(Delete(url));
+            await Task.WhenAll(tasks);
+        }
 
-            // Check if there are at least five segments (assuming the URL structure)
-            if (segments.Length >= 5)
+
+        private string? GetPublicIdFromUrl(string cloudinaryUrl)
+        {
+            Uri uri;
+            if (Uri.TryCreate(cloudinaryUrl, UriKind.Absolute, out uri))
             {
-                var publicIdWithVersionAndFormat = segments[segments.Length - 1];
-                var publicId = Path.GetFileNameWithoutExtension(publicIdWithVersionAndFormat);
+                // Cloudinary URL format: https://res.cloudinary.com/{cloud_name}/{resource_type}/{upload_type}/{version}/{public_id}/{format}
+                // Extract the part after "upload/" and before the version, which is the public_id
 
-                // If there is a version, remove it from the public ID
-                var version = segments[segments.Length - 3];
-                if (version.StartsWith("v"))
+                const string uploadPathSegment = "upload/";
+
+                int uploadIndex = uri.Segments.ToList().FindIndex(segment => segment.Equals(uploadPathSegment, StringComparison.OrdinalIgnoreCase));
+                if (uploadIndex != -1 && uploadIndex < uri.Segments.Length - 1)
                 {
-                    publicId = publicId.Replace(version, "");
+                    // The public ID is the next segment after "upload/"
+                    return uri.Segments[uploadIndex + 1].TrimEnd('/');
                 }
-
-                return publicId;
             }
 
+            // If the URL format doesn't match, return null
             return null;
         }
+
     }
 }
+
