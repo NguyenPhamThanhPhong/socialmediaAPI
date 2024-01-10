@@ -73,6 +73,7 @@ namespace socialmediaAPI.Configs
                     ClockSkew = TimeSpan.FromMinutes(6)
                 };
             });
+            services.AddAuthorization();
             return services;
         }
         public static IServiceCollection ConfigDI(this IServiceCollection services, IConfiguration config)
