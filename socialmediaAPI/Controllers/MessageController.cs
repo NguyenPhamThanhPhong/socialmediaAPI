@@ -52,5 +52,13 @@ namespace socialmediaAPI.Controllers
             return Ok($"delete state is {deletedMessage!=null}");
         }
 
+        [HttpPost("/get-messages/{skip}")]
+        public async Task<IActionResult> GetMany([FromBody] List<string> messageIds, int skip)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
+            var messages = await _messageRepository.GetbyIds(messageIds, skip);
+            return Ok(messages);
+        }
     }
 }

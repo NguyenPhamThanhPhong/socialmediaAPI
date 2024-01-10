@@ -8,46 +8,76 @@ namespace socialmediaAPI.Repositories.Repos
 {
     public class CommentRepository : ICommentRepository
     {
-        private readonly IMongoCollection<Comment> _commentCollection;
         private readonly IMongoCollection<Post> _postCollection;
-
-        public CommentRepository(DatabaseConfigs databaseConfigs)
+        private readonly IMongoCollection<Comment> _commentCollection;
+        public CommentRepository(DatabaseConfigs configuration)
         {
-            _commentCollection = databaseConfigs.CommentCollection;
-            _postCollection = databaseConfigs.PostCollection;
+            _postCollection = configuration.PostCollection;
+            _commentCollection = configuration.CommentCollection;
         }
 
         public async Task Create(Comment comment)
         {
             await _commentCollection.InsertOneAsync(comment);
-            var postUpdate = Builders<Post>.Update.Push(s => s.CommentIds,comment.Id);
-            await _postCollection.UpdateOneAsync(s=>s.Id==comment.PostId,postUpdate);
+            var filterPost = Builders<Post>.Filter.Eq(c => c.Id, comment.PostId);
+            var updatePost =
+                Builders<Post>.Update.Push(u => u.CommentIds, comment.Id);
+            await _postCollection.UpdateOneAsync(filterPost, updatePost);
+            return;
         }
 
-        public async Task<bool> Delete(string id)
+        public async Task<Comment> Delete(string id)
         {
-            var deleteResult = await _commentCollection.DeleteOneAsync(s => s.Id == id);
-            return deleteResult.DeletedCount > 0;
+            var result = await _commentCollection.FindOneAndDeleteAsync(s => s.Id == id);
+            return result;
         }
 
-        public Task<IEnumerable<Comment>> GetbyFilterString(string filterString)
+        //public Task<Comment> GetById(string id)
+        //{
+        //    var filter = Builders<Comment>.Filter.Eq(p => p.Id, id);
+        //    return _commentCollection.Find(filter).FirstOrDefaultAsync();
+        //}
+
+        public async Task<IEnumerable<Comment>> GetfromIds(IEnumerable<string> ids, int skip)
         {
-            throw new NotImplementedException();
+            var filter = Builders<Comment>.Filter.In(s => s.Id, ids);
+            var sort = Builders<Comment>.Sort.Descending(s => s.ChildCommentIds.Count);
+            return await _commentCollection.Find(filter).Sort(sort).Limit(skip).ToListAsync();
         }
 
-        public Task<IEnumerable<Comment>> GetbyIds(IEnumerable<string> ids)
+        public async Task UpdatebyParameters(string id, List<UpdateParameter> parameters)
         {
-            throw new NotImplementedException();
+            var filter = Builders<Comment>.Filter.Eq(p => p.Id, id);
+            var updateBuilder = Builders<Comment>.Update;
+            List<UpdateDefinition<Comment>> subUpdates = new List<UpdateDefinition<Comment>>();
+            foreach (var parameter in parameters)
+            {
+                subUpdates.Add(GetUpdatefromParameter(parameter));
+            }
+            var combinedUpdate = updateBuilder.Combine(subUpdates);
+            await _commentCollection.UpdateOneAsync(filter, combinedUpdate);
         }
 
-        public Task UpdatebyParameters(string id, IEnumerable<UpdateParameter> parameters)
+        public async Task UpdateContent(string id, string content)
         {
-            throw new NotImplementedException();
+            var filter = Builders<Comment>.Filter.Eq(p => p.Id, id);
+            var update = Builders<Comment>.Update.Set(c => c.Content, content);
+            await _commentCollection.UpdateOneAsync(filter, update);
         }
 
-        public Task UpdateContent(string id, string content)
+        private UpdateDefinition<Comment> GetUpdatefromParameter(UpdateParameter parameter)
         {
-            throw new NotImplementedException();
+            switch (parameter.updateAction)
+            {
+                case UpdateAction.set:
+                    return Builders<Comment>.Update.Set<object>(parameter.FieldName, parameter.Value ?? "");
+                case UpdateAction.push:
+                    return Builders<Comment>.Update.Push<object>(parameter.FieldName, parameter.Value ?? "");
+                case UpdateAction.pull:
+                    return Builders<Comment>.Update.Pull<object>(parameter.FieldName, parameter.Value ?? "");
+            }
+            return Builders<Comment>.Update.Set<object>(parameter.FieldName, parameter.Value??"");
+
         }
     }
 }

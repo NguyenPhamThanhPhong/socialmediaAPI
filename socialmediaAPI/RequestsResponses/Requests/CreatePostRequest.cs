@@ -19,9 +19,9 @@ namespace socialmediaAPI.RequestsResponses.Requests
             return new Post()
             {
                 Title = Title,
-                Contennt = Content,
+                Content = Content,
                 Owner= Owner,
-                SharedPost = "123"
+                SharedPost = ""
             };
         }
     }

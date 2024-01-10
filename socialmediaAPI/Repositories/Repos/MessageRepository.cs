@@ -37,18 +37,10 @@ namespace socialmediaAPI.Repositories.Repos
             return deletedMessage;
         }
 
-        public async Task<IEnumerable<Message>> GetbyFilterString(string filterString)
-        {
-            var filterDocument = BsonSerializer.Deserialize<BsonDocument>(filterString);
-            var filter = new BsonDocumentFilterDefinition<Message>(filterDocument);
-            return await _messageCollection.Find(filter).ToListAsync();
-        }
-
-        public async Task<IEnumerable<Message>> GetbyIds(IEnumerable<string> ids)
+        public async Task<IEnumerable<Message>> GetbyIds(IEnumerable<string> ids,int skip)
         {
             var filter = Builders<Message>.Filter.In(m=>m.Id,ids);
-            return await _messageCollection.Find(filter).ToListAsync();
-
+            return await _messageCollection.Find(filter).Skip(skip).Limit(50).ToListAsync();
         }
 
         public Task UpdatebyParameters(string id, IEnumerable<UpdateParameter> parameters)
@@ -76,9 +68,17 @@ namespace socialmediaAPI.Repositories.Repos
             return _messageCollection.UpdateOneAsync(filter, combinedUpdate);
         }
 
-        public Task UpdateContent(string id, string content)
+        public async Task UpdateContent(string id, string content)
         {
-            throw new NotImplementedException();
+            var filter = Builders<Message>.Filter.Eq(p => p.Id, id);
+            var update = Builders<Message>.Update.Set(c => c.Content, content);
+            await _messageCollection.UpdateOneAsync(filter, update);
         }
     }
 }
+//public async Task<IEnumerable<Message>> GetbyFilterString(string filterString)
+//{
+//    var filterDocument = BsonSerializer.Deserialize<BsonDocument>(filterString);
+//    var filter = new BsonDocumentFilterDefinition<Message>(filterDocument);
+//    return await _messageCollection.Find(filter).ToListAsync();
+//}
