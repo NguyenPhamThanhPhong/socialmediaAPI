@@ -8,7 +8,6 @@ namespace socialmediaAPI.Repositories.Interface
         public Task Create(Message message);
         public Task<IEnumerable<Message>> GetbyIds(IEnumerable<string> ids, int skip);
 
-        public Task UpdatebyParameters(string id, IEnumerable<UpdateParameter> parameters);
         public Task UpdateContent(string id, string content);
         public Task<Message> Delete(string id);
     }

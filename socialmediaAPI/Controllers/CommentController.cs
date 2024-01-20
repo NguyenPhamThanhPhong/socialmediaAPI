@@ -7,6 +7,7 @@ using socialmediaAPI.Models.Entities;
 using socialmediaAPI.Repositories.Interface;
 using socialmediaAPI.RequestsResponses.Requests;
 using socialmediaAPI.Services.CloudinaryService;
+using System.Text.Json;
 
 namespace socialmediaAPI.Controllers
 {
@@ -65,7 +66,8 @@ namespace socialmediaAPI.Controllers
             if (request.Files != null && request.Files.Count > 0)
             {
                 var urls = await _cloudinaryHandler.UploadImages(request.Files, _commentFolderName);
-                update.Set(s => s.FileUrls, urls);
+                Console.WriteLine(JsonSerializer.Serialize(urls));
+                update = update.Set(s => s.FileUrls, urls);
             }
             var result = await _commentCollection.UpdateOneAsync(filter, update);
             return Ok(result.ModifiedCount>0);

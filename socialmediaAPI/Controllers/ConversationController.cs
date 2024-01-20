@@ -1,9 +1,12 @@
 ﻿using AutoMapper;
+using CloudinaryDotNet;
 using MailKit.Search;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using socialmediaAPI.Configs;
 using socialmediaAPI.Models.Entities;
 using socialmediaAPI.Repositories.Interface;
 using socialmediaAPI.Repositories.Repos;
@@ -19,16 +22,23 @@ namespace socialmediaAPI.Controllers
     {
         private readonly IConversationRepository _conversationRepository;
         private readonly IMessageRepository _messageRepository;
+        private readonly IMongoCollection<Conversation> _conversationCollection;
         private readonly CloudinaryHandler _cloudinaryHandler;
         private readonly IMapper _mapper;
         private readonly string _conversationFolderName = "Conversation";
 
-        public ConversationController(IConversationRepository conversationRepository, CloudinaryHandler cloudinaryHandler, IMapper mapper, IMessageRepository messageRepository)
+
+        public ConversationController(IConversationRepository conversationRepository, 
+            CloudinaryHandler cloudinaryHandler, IMapper mapper, 
+            IMessageRepository messageRepository,DatabaseConfigs databaseConfigs)
         {
             _conversationRepository = conversationRepository;
             _cloudinaryHandler = cloudinaryHandler;
             _mapper = mapper;
             _messageRepository = messageRepository;
+            _conversationCollection = databaseConfigs.ConversationCollection;
+
+
         }
         [HttpPost("/conversation-create")]
         public async Task<IActionResult> Create([FromForm] ConversationCreateRequest request)
@@ -42,15 +52,7 @@ namespace socialmediaAPI.Controllers
             return Ok(conversation);
         }
 
-        [HttpPost("/conversation-update-string-fields/{id}")]
-        public async Task<IActionResult> UpdateParameters([FromBody] List<UpdateParameter> parameters, string id)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest("invalid modelstate");
-            await _conversationRepository.UpdateStringFields(id, parameters);
-            return Ok("updated");
-        }
-        [HttpPost("/conversation-get-many/{skip}")]
+        [HttpPost("/conversation-get-from-ids/{skip}")]
         public async Task<IActionResult> GetMany([FromBody] List<string> ids, int skip)
         {
             if (!ModelState.IsValid)
@@ -60,21 +62,34 @@ namespace socialmediaAPI.Controllers
             return Ok(new { conversations, messages });
         }
 
-        [HttpPost("/conversation-get-by-name")]
-        public async Task<IActionResult> GetbyName(string name)
+        [HttpPost("/conversation-search")]
+        public async Task<IActionResult> GetbyName(string search)
         {
             if (!ModelState.IsValid)
                 return BadRequest("invalid modelstate");
-            var sanitizedPattern = new string(name
-                    .Where(c => Char.IsLetterOrDigit(c)) // Keep only alphanumeric characters
-                    .ToArray());
+            var pattern = new BsonRegularExpression(new Regex(Regex.Escape(search), RegexOptions.IgnoreCase));
 
-            var filter = Builders<Conversation>.Filter.Regex(c => c.Name, new BsonRegularExpression($"/{Regex.Escape(sanitizedPattern)}/i"));
+            var filter = Builders<Conversation>.Filter.Regex(c => c.Name, pattern);
             var conversations = await _conversationRepository.GetbyFilter(filter);
             return Ok(conversations);
-
         }
-
-
+        [HttpPost("/conversation-update/{id}")]
+        public async Task<IActionResult> Update(string id,[FromBody] UpdateConversationRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest("invalid modelstate");
+            var filter = Builders<Conversation>.Filter.Eq(s => s.ID, id);
+            var update = Builders<Conversation>.Update
+                .Set(s => s.Name, request.Name)
+                .Set(s => s.ParticipantIds, request.ParticipantIds);
+            if(request.File!=null && request.File.Length>0)
+            {
+                var fileUrl = await _cloudinaryHandler.UploadSingleImage(request.File, _conversationFolderName);
+                update = update.Set(s => s.AvatarUrl, fileUrl);
+                return Ok(fileUrl);
+            }
+            await _conversationCollection.UpdateOneAsync(filter,update);
+            return Ok();
+        }
     }
 }

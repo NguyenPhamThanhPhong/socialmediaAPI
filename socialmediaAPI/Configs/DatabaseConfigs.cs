@@ -14,6 +14,7 @@ namespace socialmediaAPI.Configs
         public string ConversationCollectionName { get; set; }
         public string PostCollectionName { get; set; }
         public string CommentCollectionName { get; set; }
+        public string ReportCollectionName { get; set; }
 
         public IMongoClient? MongoClient { get; private set; }
         public IMongoDatabase? MongoDtb { get; private set; }
@@ -23,6 +24,7 @@ namespace socialmediaAPI.Configs
         public IMongoCollection<Conversation> ConversationCollection { get; set; }
         public IMongoCollection<Post> PostCollection { get; set; }
         public IMongoCollection<Comment> CommentCollection { get; set; }
+        public IMongoCollection<Report> ReportCollection { get; set; }
 
         public void SetupDatabase()
         {
@@ -41,6 +43,7 @@ namespace socialmediaAPI.Configs
             ConversationCollection = MongoDtb.GetCollection<Conversation>(ConversationCollectionName);
             PostCollection = MongoDtb.GetCollection<Post>(PostCollectionName);
             CommentCollection = MongoDtb.GetCollection<Comment>(CommentCollectionName);
+            ReportCollection = MongoDtb.GetCollection<Report>(ReportCollectionName);
         }
         private void CreateUniqueIndex()
         {

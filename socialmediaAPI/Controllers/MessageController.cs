@@ -27,7 +27,7 @@ namespace socialmediaAPI.Controllers
             _mapper = mapper;
             _messageFolderName = cloudinaryConfigs.MessageFolderName;
         }
-        [HttpPost("/send-message")]
+        [HttpPost("/message-send")]
         public async Task<IActionResult> Create([FromForm] MessageCreateRequest request)
         {
             if (!ModelState.IsValid)
@@ -39,7 +39,7 @@ namespace socialmediaAPI.Controllers
             return Ok(message);
         }
 
-        [HttpDelete("/delete-message")]
+        [HttpDelete("/message-delete/{id}")]
         public async Task<IActionResult> Edit(string id)
         {
             if (!ModelState.IsValid)
@@ -52,7 +52,7 @@ namespace socialmediaAPI.Controllers
             return Ok($"delete state is {deletedMessage!=null}");
         }
 
-        [HttpPost("/get-messages/{skip}")]
+        [HttpPost("/message-get-many/{skip}")]
         public async Task<IActionResult> GetMany([FromBody] List<string> messageIds, int skip)
         {
             if (!ModelState.IsValid)

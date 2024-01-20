@@ -23,6 +23,7 @@ namespace socialmediaAPI.Controllers
         private readonly CloudinaryHandler _cloudinaryHandler;
         private readonly string _postFolderName;
         private readonly IMongoCollection<Post> _postCollection;
+        private readonly IMongoCollection<User> _userCollection;
 
         public PostController(IPostRepository postRepository, DatabaseConfigs databaseConfigs,
             CloudinaryHandler cloudinaryHandler, CloudinaryConfigs cloudinaryConfigs)
@@ -31,6 +32,7 @@ namespace socialmediaAPI.Controllers
             _cloudinaryHandler = cloudinaryHandler;
             _postFolderName = cloudinaryConfigs.PostFolderName;
             _postCollection = databaseConfigs.PostCollection;
+            _userCollection = databaseConfigs.UserCollection;
         }
         [HttpPost("/post-create")]
         public async Task<IActionResult> Create([FromForm] CreatePostRequest request )
@@ -57,10 +59,44 @@ namespace socialmediaAPI.Controllers
             if (selfId == null)
                 return Unauthorized("no id found");
             var filter = Builders<Post>.Filter.Eq(s => s.Id, id);
-            var update = Builders<Post>.Update.AddToSet(s => s.Likes, selfId );
-            await _postCollection.UpdateOneAsync(filter, update);
+            if (updateAction)
+            {
+                var update = Builders<Post>.Update.AddToSet(s => s.Likes, selfId);
+                var SelfUpdate = Builders<User>.Update.AddToSet(s => s.LikedPostIds, id);
+                await Task.WhenAll(_postCollection.UpdateOneAsync(filter, update),
+                    _userCollection.UpdateOneAsync(s => s.ID == selfId, SelfUpdate));
+            }
+            else
+            {
+                var update = Builders<Post>.Update.Pull(s => s.Likes, selfId);
+                var SelfUpdate = Builders<User>.Update.Pull(s => s.LikedPostIds, id);
+                await Task.WhenAll(_postCollection.UpdateOneAsync(filter, update),
+                    _userCollection.UpdateOneAsync(s => s.ID == selfId, SelfUpdate));
+            }
             return Ok("updated");
         }
+        [Authorize]
+        [HttpPost("/post-save-unsave/{id}/{updateAction}")]
+        public async Task<IActionResult> UpdateSaved(string id, bool updateAction)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest("invalid modelstate");
+            var selfId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (selfId == null)
+                return Unauthorized("no id found");
+            if (updateAction)
+            {
+                var SelfUpdate = Builders<User>.Update.AddToSet(s => s.SavedPostIds, id);
+                await _userCollection.UpdateOneAsync(s => s.ID == selfId, SelfUpdate);
+            }
+            else
+            {
+                var SelfUpdate = Builders<User>.Update.Pull(s => s.SavedPostIds, id);
+                await _userCollection.UpdateOneAsync(s => s.ID == selfId, SelfUpdate);
+            }
+            return Ok("updated");
+        }
+
 
         [HttpPost("/post-get-from-ids")]
         public async Task<IActionResult> Get([FromBody] List<string> ids)
@@ -81,13 +117,21 @@ namespace socialmediaAPI.Controllers
 
             var fileUrls = request.keepUrls;
             if (request.Files != null)
-                fileUrls = await _cloudinaryHandler.UploadImages(request.Files, _postFolderName);
+            {
+                var uploadUrl = await _cloudinaryHandler.UploadImages(request.Files, _postFolderName);
+                if (fileUrls == null)
+                    fileUrls = uploadUrl;
+                else
+                    foreach (var kvp in uploadUrl)
+                        fileUrls.Add(kvp.Key, kvp.Value);
+            }
 
             var filter = Builders<Post>.Filter.Eq(s => s.Id, id);
             var update = Builders<Post>.Update
                 .Set(s => s.Content, request.Content)
                 .Set(s => s.FileUrls, fileUrls)
-                .Set(s => s.Title, request.Title);
+                .Set(s => s.Title, request.Title)
+                .Set(s => s.IsDraft, request.IsDraft);
             await _postCollection.UpdateOneAsync(filter, update);
             return Ok("updated");
         }

@@ -11,6 +11,7 @@ using socialmediaAPI.Models.Entities;
 using socialmediaAPI.Repositories.Interface;
 using socialmediaAPI.RequestsResponses.Requests;
 using socialmediaAPI.Services.CloudinaryService;
+using System.Security.Claims;
 
 namespace socialmediaAPI.Controllers
 {
@@ -63,7 +64,7 @@ namespace socialmediaAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest($"invalid model state");
             var parameter = new UpdateParameter(Models.Entities.User.GetFieldName(u => u.AuthenticationInfo.Email), email, UpdateAction.set);
-            await _userRepository.UpdatebyParameters(id, new List<UpdateParameter> { parameter});
+            await _userRepository.UpdatebyParameters(id, new List<UpdateParameter> { parameter });
             return Ok("updated");
         }
         [HttpPut("/update-password/{id}")]
@@ -97,15 +98,35 @@ namespace socialmediaAPI.Controllers
             return BadRequest("failed to update");
 
         }
-        [HttpPut("/update-parameters-string-fields/{id}")]
-        public async Task<IActionResult> UpdateParmeters(string id, [FromBody] List<UpdateParameter> parameters)
+
+        [Authorize]
+        [HttpPost("/update-follow/{targetId}/{updateAction}")]
+        public async Task<IActionResult> UpdateFollow(string targetId, bool updateAction)
         {
             if (!ModelState.IsValid)
                 return BadRequest("invalid modelstate");
-            await _userRepository.UpdateStringFields(id,parameters);
-            return Ok("updated");
-        }
+            var selfId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (selfId == null)
+                return Unauthorized();
 
+            var selfFilter = Builders<User>.Filter.Eq(s => s.ID, selfId);
+            var targetFilter = Builders<User>.Filter.Eq(s => s.ID, targetId);
+            if (updateAction == true)
+            {
+                var updateSelf = Builders<User>.Update.AddToSet(s => s.FollowingIds, targetId);
+                var updateTarget = Builders<User>.Update.AddToSet(s => s.FollowerIds, selfId);
+                await Task.WhenAll(_userCollection.UpdateOneAsync(selfFilter, updateSelf),
+                    _userCollection.UpdateOneAsync(targetFilter, updateTarget));
+            }
+            else
+            {
+                var updateSelf = Builders<User>.Update.Pull(s => s.FollowingIds, targetId);
+                var updateTarget = Builders<User>.Update.Pull(s => s.FollowerIds, selfId);
+                await Task.WhenAll(_userCollection.UpdateOneAsync(selfFilter, updateSelf), 
+                    _userCollection.UpdateOneAsync(targetFilter, updateTarget));
+            }
+            return Ok();
+        }
         [HttpDelete("/user-delete/{id}")]
         public async Task<IActionResult> Delete(string id)
         {

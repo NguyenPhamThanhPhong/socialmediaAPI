@@ -108,6 +108,7 @@ namespace socialmediaAPI.Services.CloudinaryService
 
             if (!string.IsNullOrEmpty(publicId))
             {
+                Console.WriteLine(publicId);
                 var deletionParams = new DeletionParams(publicId);
 
                 var deletionResult = await _cloudinary.DestroyAsync(deletionParams);
@@ -131,7 +132,7 @@ namespace socialmediaAPI.Services.CloudinaryService
         }
         public async Task DeleteMany(List<string?> urls)
         {
-            Task[] tasks = new Task[urls.Count];
+            Task[] tasks = new List<Task>();
             foreach (string? url in urls)
                 tasks.Append(Delete(url));
             await Task.WhenAll(tasks);

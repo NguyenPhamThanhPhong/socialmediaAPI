@@ -11,7 +11,6 @@ namespace socialmediaAPI.Models.Entities
         public string? Name { get; set; }
         public string? AvatarUrl { get; set; }
 
-        public List<string>? AdminIDs { get; set; }
         public List<string>? ParticipantIds { get; set; }
         public bool IsGroup { get; set; }
         public List<string>? Blockers { get; set; }
@@ -22,7 +21,6 @@ namespace socialmediaAPI.Models.Entities
         public Conversation()
         {
             ID = string.Empty;
-            AdminIDs = new List<string>();
             ParticipantIds = new List<string>();
             IsGroup = false;
             Blockers = new List<string>();

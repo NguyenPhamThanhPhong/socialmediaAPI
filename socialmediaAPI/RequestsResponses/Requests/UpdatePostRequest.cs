@@ -5,6 +5,7 @@
         public string Id { get; set; }
         public string Title { get; set; }
         public string Content { get; set; }
+        public bool IsDraft { get; set; }   
         public List<string?> deleteUrls { get; set; }
         public Dictionary<string, string?> keepUrls { get; set; }
         public List<IFormFile>? Files { get; set; }

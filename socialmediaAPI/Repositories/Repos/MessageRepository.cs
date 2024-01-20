@@ -43,31 +43,6 @@ namespace socialmediaAPI.Repositories.Repos
             return await _messageCollection.Find(filter).Skip(skip).Limit(50).ToListAsync();
         }
 
-        public Task UpdatebyParameters(string id, IEnumerable<UpdateParameter> parameters)
-        {
-            var filter = Builders<Message>.Filter.Eq(p => p.Id, id);
-            var updateBuilder = Builders<Message>.Update;
-            List<UpdateDefinition<Message>> subUpdates = new List<UpdateDefinition<Message>>();
-
-            foreach (var parameter in parameters)
-            {
-                switch (parameter.updateAction)
-                {
-                    case UpdateAction.set:
-                        subUpdates.Add(Builders<Message>.Update.Set(parameter.FieldName, parameter.Value));
-                        continue;
-                    case UpdateAction.push:
-                        subUpdates.Add(Builders<Message>.Update.Push(parameter.FieldName, parameter.Value));
-                        continue;
-                    case UpdateAction.pull:
-                        subUpdates.Add(Builders<Message>.Update.Pull(parameter.FieldName, parameter.Value));
-                        continue;
-                }
-            }
-            var combinedUpdate = updateBuilder.Combine(subUpdates);
-            return _messageCollection.UpdateOneAsync(filter, combinedUpdate);
-        }
-
         public async Task UpdateContent(string id, string content)
         {
             var filter = Builders<Message>.Filter.Eq(p => p.Id, id);
