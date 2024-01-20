@@ -40,17 +40,10 @@ namespace socialmediaAPI.Repositories.Repos
             return deletedPost;
         }
 
-        public Task<List<Post>> GetbyFilterString(string filterString)
-        {
-            var filter = BsonDocument.Parse(filterString);
-            return _postCollection.Find(filter).ToListAsync();
-
-        }
-
-        public Task<Post> GetbyIds(IEnumerable<string> ids)
+        public async Task<IEnumerable<Post>> GetbyIds(IEnumerable<string> ids)
         {
             var filter = Builders<Post>.Filter.In(p => p.Id, ids);
-            return _postCollection.Find(filter).FirstOrDefaultAsync();
+            return await _postCollection.Find(filter).ToListAsync();
         }
 
         public Task UpdatebyInstance(Post post)
@@ -59,54 +52,5 @@ namespace socialmediaAPI.Repositories.Repos
             return _postCollection.FindOneAndReplaceAsync(filter, post);
         }
 
-        public Task UpdatebyParameters(string id, List<UpdateParameter> parameters)
-        {
-            var filter = Builders<Post>.Filter.Eq(p => p.Id, id);
-            var updateBuilder = Builders<Post>.Update;
-            List<UpdateDefinition<Post>> subUpdates = new List<UpdateDefinition<Post>>();
-
-            foreach (var parameter in parameters)
-            {
-                switch (parameter.updateAction)
-                {
-                    case UpdateAction.set:
-                        subUpdates.Add(Builders<Post>.Update.Set(parameter.FieldName, parameter.Value ));
-                        continue;
-                    case UpdateAction.push:
-                        subUpdates.Add(Builders<Post>.Update.Push(parameter.FieldName, parameter.Value));
-                        continue;
-                    case UpdateAction.pull:
-                        subUpdates.Add(Builders<Post>.Update.Pull(parameter.FieldName, parameter.Value));
-                        continue;
-                }
-            }
-            var combinedUpdate = updateBuilder.Combine(subUpdates);
-            return _postCollection.UpdateOneAsync(filter, combinedUpdate);
-        }
-
-        public Task UpdateStringFields(string id, List<UpdateParameter> parameters)
-        {
-            var filter = Builders<Post>.Filter.Eq(p => p.Id, id);
-            var updateBuilder = Builders<Post>.Update;
-            List<UpdateDefinition<Post>> subUpdates = new List<UpdateDefinition<Post>>();
-
-            foreach (var parameter in parameters)
-            {
-                switch (parameter.updateAction)
-                {
-                    case UpdateAction.set:
-                        subUpdates.Add(Builders<Post>.Update.Set(parameter.FieldName, parameter.Value?.ToString()));
-                        continue;
-                    case UpdateAction.push:
-                        subUpdates.Add(Builders<Post>.Update.Push(parameter.FieldName, parameter.Value?.ToString()));
-                        continue;
-                    case UpdateAction.pull:
-                        subUpdates.Add(Builders<Post>.Update.Pull(parameter.FieldName, parameter.Value?.ToString()));
-                        continue;
-                }
-            }
-            var combinedUpdate = updateBuilder.Combine(subUpdates);
-            return _postCollection.UpdateOneAsync(filter, combinedUpdate);
-        }
     }
 }

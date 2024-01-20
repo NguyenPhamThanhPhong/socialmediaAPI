@@ -8,21 +8,26 @@ namespace socialmediaAPI.Models.Entities
     [BsonIgnoreExtraElements]
     public class Post
     {
-#pragma warning disable CS8618
         [BsonId]
         [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string Id { get; set; }
         public string Title { get; set; }
         public string Content { get; set; }
-        public string? SharedPost { get; set; }
+        public bool IsDraft { get; set; }
+        public DateTime RecentTime { get; set; }
+        public List<string> Likes { get; set; }
         public Dictionary<string, string?>? FileUrls { get; set; }
         public OwnerRepresentation Owner { get; set; }
-        public List<LikeRepresentation> Likes { get; set; }
         public List<string> CommentIds { get; set; }
         public Post()
         {
             Id = string.Empty;
-            Likes = new List<LikeRepresentation>();
+            Title = string.Empty;
+            Content = string.Empty;
+            IsDraft= false;
+            Owner = new OwnerRepresentation();
+            Likes = new List<string>();
+            RecentTime = DateTime.UtcNow;
             CommentIds = new List<string>();
         }
         public static string GetFieldName<T>(Expression<Func<Post, T>> expression)

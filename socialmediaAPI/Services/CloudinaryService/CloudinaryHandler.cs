@@ -140,11 +140,10 @@ namespace socialmediaAPI.Services.CloudinaryService
 
         private string? GetPublicIdFromUrl(string cloudinaryUrl)
         {
+            string[] segments = cloudinaryUrl.Split('/');
             Uri uri;
             if (Uri.TryCreate(cloudinaryUrl, UriKind.Absolute, out uri))
             {
-                // Cloudinary URL format: https://res.cloudinary.com/{cloud_name}/{resource_type}/{upload_type}/{version}/{public_id}/{format}
-                // Extract the part after "upload/" and before the version, which is the public_id
 
                 const string uploadPathSegment = "upload/";
 
@@ -152,7 +151,9 @@ namespace socialmediaAPI.Services.CloudinaryService
                 if (uploadIndex != -1 && uploadIndex < uri.Segments.Length - 1)
                 {
                     // The public ID is the next segment after "upload/"
-                    return uri.Segments[uploadIndex + 1].TrimEnd('/');
+                    string[] publicIdSegments = uri.Segments.Skip(uploadIndex +2 ).Take(2).ToArray();
+                    string combinedSegments = string.Join("", publicIdSegments);
+                    return combinedSegments;
                 }
             }
 

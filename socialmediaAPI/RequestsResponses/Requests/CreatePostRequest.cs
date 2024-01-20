@@ -10,9 +10,9 @@ namespace socialmediaAPI.RequestsResponses.Requests
         public string Title { get; set; }
         public string Content { get; set; }
         public List<IFormFile>? Files { get; set; }
+        public bool IsDraft { get; set; }
         [Required]
         public OwnerRepresentation Owner { get; set; }
-        public string? SharedPostId { get; set; }
 
         public Post ConvertToPost()
         {
@@ -21,7 +21,7 @@ namespace socialmediaAPI.RequestsResponses.Requests
                 Title = Title,
                 Content = Content,
                 Owner= Owner,
-                SharedPost = ""
+                IsDraft = IsDraft
             };
         }
     }

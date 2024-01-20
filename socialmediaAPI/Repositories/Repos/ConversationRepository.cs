@@ -25,14 +25,18 @@ namespace socialmediaAPI.Repositories.Repos
         public async Task Create(Conversation conversation)
         {
             await _conversationCollection.InsertOneAsync(conversation);
-            var filter = Builders<User>.Filter.Eq(u => u.ConverationIds, conversation.ParticipantIds);
-            var update = Builders<User>.Update.Push(u => u.ConverationIds, conversation.ID);
+            var filter = Builders<User>.Filter.Eq(u => u.ConversationIds, conversation.ParticipantIds);
+            var update = Builders<User>.Update.Push(u => u.ConversationIds, conversation.ID);
             await _userCollection.UpdateManyAsync(filter, update);
         }
 
-        public Task<Conversation> Delete(string id)
+        public async Task<Conversation> Delete(string id)
         {
-            return _conversationCollection.FindOneAndDeleteAsync(u=>u.ID == id);
+            var conversation = await _conversationCollection.FindOneAndDeleteAsync(u => u.ID == id);
+            var messageFilter = Builders<Message>.Filter.In(s=>s.Id,conversation.ParticipantIds);
+            //await _messageCollection.Find(messageFilter).ToListAsync();
+            await _messageCollection.DeleteManyAsync(messageFilter);
+            return conversation;
         }
 
         public async Task<IEnumerable<Conversation>> GetbyFilter(FilterDefinition<Conversation> filter)

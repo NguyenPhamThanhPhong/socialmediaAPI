@@ -31,9 +31,9 @@ namespace socialmediaAPI.Controllers
         }
 
         [HttpPost("/comment-get-many/{skip}")]
-        public async Task<IActionResult> GetMany([FromBody] List<string> ids,int skip)
+        public async Task<IActionResult> GetMany([FromBody] List<string> ids, int skip)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             try
             {

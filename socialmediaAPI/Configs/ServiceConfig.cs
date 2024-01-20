@@ -69,6 +69,15 @@ namespace socialmediaAPI.Configs
                     ValidateIssuerSigningKey = true,
                     ClockSkew = TimeSpan.FromMinutes(6)
                 };
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        context.Token = context.Request.Cookies["token"];
+                        Console.WriteLine(context.Token);
+                        return Task.CompletedTask;
+                    }
+                };
             });
             services.AddAuthorization();
             return services;

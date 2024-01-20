@@ -7,13 +7,9 @@ namespace socialmediaAPI.Repositories.Interface
     {
         public Task CreatePost(Post post);
 
-        public Task<Post> GetbyIds(IEnumerable<string> ids);
-        public Task<List<Post>> GetbyFilterString(string filterString);
+        public Task<IEnumerable<Post>> GetbyIds(IEnumerable<string> ids);
 
         public Task UpdatebyInstance(Post post);
-        public Task UpdatebyParameters(string id, List<UpdateParameter> parameters);
-        public Task UpdateStringFields(string id, List<UpdateParameter> parameters);
-
         public Task<Post> Delete(string id);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +13,7 @@ using socialmediaAPI.Services.Authentication;
 using socialmediaAPI.Services.CloudinaryService;
 using socialmediaAPI.Services.SMTP;
 using socialmediaAPI.Services.Validators;
+using System.Security.Claims;
 
 namespace socialmediaAPI.Controllers
 {
@@ -56,8 +58,7 @@ namespace socialmediaAPI.Controllers
             {
                 if(request.File!=null)
                 {
-                    var avatarSet = await _cloudinaryHandler.UploadImages(new List<IFormFile> { request.File }, _userFolderName);
-                    user.PersonalInfo.AvatarUrl = avatarSet.Values.FirstOrDefault();
+                    user.PersonalInfo.AvatarUrl = await _cloudinaryHandler.UploadSingleImage(request.File, _userFolderName);
                 }
                 await _userRepository.Create(user);
             }
@@ -82,15 +83,23 @@ namespace socialmediaAPI.Controllers
                 HttpOnly = true,
                 Expires = DateTime.UtcNow.AddMinutes(120) // Cookie expiration time
             };
-            Response.Cookies.Append("access_token", accessToken, cookieOptions );
-            Response.Cookies.Append("userID", user.ID, cookieOptions);
+            Response.Cookies.Append("token", accessToken, cookieOptions );
             return Ok(user);
         }
 
+        [Authorize]
         [HttpGet("/login-auto")]
         public async Task<IActionResult> Login()
         {
-            return Ok("logged in");
+            if (!ModelState.IsValid)
+                return BadRequest();
+            var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (id == null)
+                return Unauthorized();
+
+            var user = await _userRepository.GetbyId(id);
+
+            return Ok(user);
         }
 
         [HttpPost("/send-mail-verification")]
@@ -131,20 +140,5 @@ namespace socialmediaAPI.Controllers
             return BadRequest("invalid code");
         }
 
-
-
-        #region private Util function update user Database & Cloudinary
-        private async Task UpdateUserAvatar(string id, List<IFormFile> files)
-        {
-            var avatarSet = await _cloudinaryHandler.UploadImages(files, _userFolderName);
-            UpdateParameter parameter = new UpdateParameter()
-            {
-                FieldName = Models.Entities.User.GetFieldName(u => u.PersonalInfo.AvatarUrl),
-                Value = avatarSet.Values.FirstOrDefault(),
-                updateAction = UpdateAction.set
-            };
-            await _userRepository.UpdatebyParameters(id, new List<UpdateParameter> { parameter });
-        }
-        #endregion
     }
 }

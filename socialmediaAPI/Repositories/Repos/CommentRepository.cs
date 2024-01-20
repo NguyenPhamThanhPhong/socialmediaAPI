@@ -29,33 +29,17 @@ namespace socialmediaAPI.Repositories.Repos
         public async Task<Comment> Delete(string id)
         {
             var result = await _commentCollection.FindOneAndDeleteAsync(s => s.Id == id);
+            var filterPost = Builders<Post>.Filter.Eq(s => s.Id, result.PostId);
+            var updatePost = Builders<Post>.Update.Pull(s => s.CommentIds, result.Id);
+            await _postCollection.UpdateOneAsync(filterPost, updatePost);
             return result;
         }
-
-        //public Task<Comment> GetById(string id)
-        //{
-        //    var filter = Builders<Comment>.Filter.Eq(p => p.Id, id);
-        //    return _commentCollection.Find(filter).FirstOrDefaultAsync();
-        //}
 
         public async Task<IEnumerable<Comment>> GetfromIds(IEnumerable<string> ids, int skip)
         {
             var filter = Builders<Comment>.Filter.In(s => s.Id, ids);
-            var sort = Builders<Comment>.Sort.Descending(s => s.ChildCommentIds.Count);
+            var sort = Builders<Comment>.Sort.Descending(s => s.CommentTime);
             return await _commentCollection.Find(filter).Sort(sort).Limit(skip).ToListAsync();
-        }
-
-        public async Task UpdatebyParameters(string id, List<UpdateParameter> parameters)
-        {
-            var filter = Builders<Comment>.Filter.Eq(p => p.Id, id);
-            var updateBuilder = Builders<Comment>.Update;
-            List<UpdateDefinition<Comment>> subUpdates = new List<UpdateDefinition<Comment>>();
-            foreach (var parameter in parameters)
-            {
-                subUpdates.Add(GetUpdatefromParameter(parameter));
-            }
-            var combinedUpdate = updateBuilder.Combine(subUpdates);
-            await _commentCollection.UpdateOneAsync(filter, combinedUpdate);
         }
 
         public async Task UpdateContent(string id, string content)
@@ -63,21 +47,6 @@ namespace socialmediaAPI.Repositories.Repos
             var filter = Builders<Comment>.Filter.Eq(p => p.Id, id);
             var update = Builders<Comment>.Update.Set(c => c.Content, content);
             await _commentCollection.UpdateOneAsync(filter, update);
-        }
-
-        private UpdateDefinition<Comment> GetUpdatefromParameter(UpdateParameter parameter)
-        {
-            switch (parameter.updateAction)
-            {
-                case UpdateAction.set:
-                    return Builders<Comment>.Update.Set<object>(parameter.FieldName, parameter.Value ?? "");
-                case UpdateAction.push:
-                    return Builders<Comment>.Update.Push<object>(parameter.FieldName, parameter.Value ?? "");
-                case UpdateAction.pull:
-                    return Builders<Comment>.Update.Pull<object>(parameter.FieldName, parameter.Value ?? "");
-            }
-            return Builders<Comment>.Update.Set<object>(parameter.FieldName, parameter.Value??"");
-
         }
     }
 }

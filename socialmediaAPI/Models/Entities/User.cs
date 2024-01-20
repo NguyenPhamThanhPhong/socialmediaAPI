@@ -4,7 +4,7 @@ using MongoDB.Bson.Serialization.Serializers;
 using socialmediaAPI.Models.Embeded.User;
 using System.Linq.Expressions;
 
-#pragma warning disable CS8618
+//#pragma warning disable CS8618
 
 namespace socialmediaAPI.Models.Entities
 {
@@ -15,25 +15,34 @@ namespace socialmediaAPI.Models.Entities
         [BsonRepresentation(BsonType.ObjectId)]
         public string ID { get; set; }
         public bool IsMailConfirmed { get; set; }
+        public string Role { get; set; }
         public AuthenticationInformation AuthenticationInfo { get; set; }
         public PersonalInformation PersonalInfo { get; set; }
-        public List<string> FriendWaitIds { get; set; }
-        public List<string> FriendRequestIds { get; set; }
-        public List<string> FriendIds { get; set; }
-        public List<string> BlockedIds { get; set; }
+        public List<string> FollowerIds { get; set; }
+        public List<string> FollowingIds { get; set; }
+        public List<string> LikedPostIds { get; set; }
+        public List<string> SavedPostIds { get; set; }
         public List<string> PostIds { get; set; }
-        public List<string> ConverationIds { get; set; }
-        public List<Notification> Notifications { get; set; }
+        public List<string> NotificationIds { get; set; }
+        public List<string> ConversationIds { get; set; }
+        public List<string> ReportIds { get; set; }
         public VerificationTicket EmailVerification { get; set; }
+
         public User()
         {
             ID = string.Empty;
-            FriendWaitIds= new List<string>();
-            FriendRequestIds = new List<string>();
-            FriendIds = new List<string>();
-            BlockedIds = new List<string>();
+            AuthenticationInfo = new AuthenticationInformation();
+            PersonalInfo= new PersonalInformation();
+            Role = "user";
+            FollowerIds= new List<string>();
+            FollowingIds = new List<string>();
+            LikedPostIds= new List<string>();
+            SavedPostIds= new List<string>();
             PostIds = new List<string>();
-            Notifications = new List<Notification>();
+            NotificationIds = new List<string>();
+            ConversationIds = new List<string>();
+            ReportIds= new List<string>();
+            EmailVerification = new VerificationTicket();
         }
         public static string GetFieldName<T>(Expression<Func<User, T>> expression)
         {
