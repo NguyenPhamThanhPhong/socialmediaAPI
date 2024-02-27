@@ -109,9 +109,10 @@ namespace socialmediaAPI.Configs
             {
                 options.AddDefaultPolicy(builder =>
                 {
-                    builder.WithOrigins("http://localhost:3000")
-                           .AllowAnyHeader()
-                           .AllowAnyMethod();
+                    builder.AllowAnyMethod()
+                            .AllowAnyHeader()
+                            .SetIsOriginAllowed(host => true) // allow any origin
+                            .AllowCredentials();
                 });
             });
             return services;

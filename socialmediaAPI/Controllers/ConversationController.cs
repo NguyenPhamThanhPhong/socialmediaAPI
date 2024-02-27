@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CloudinaryDotNet;
 using MailKit.Search;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
@@ -40,6 +41,7 @@ namespace socialmediaAPI.Controllers
 
 
         }
+        [Authorize(Roles = "admin")]
         [HttpPost("/conversation-create")]
         public async Task<IActionResult> Create([FromForm] ConversationCreateRequest request)
         {
@@ -51,17 +53,16 @@ namespace socialmediaAPI.Controllers
             await _conversationRepository.Create(conversation);
             return Ok(conversation);
         }
-
+        [Authorize(Roles = "admin")]
         [HttpPost("/conversation-get-from-ids/{skip}")]
         public async Task<IActionResult> GetMany([FromBody] List<string> ids, int skip)
         {
             if (!ModelState.IsValid)
                 return BadRequest("invalid modelstate");
             var conversations = await _conversationRepository.GetbyIds(ids, skip);
-            var messages = await _messageRepository.GetbyIds(ids, skip);
-            return Ok(new { conversations, messages });
+            return Ok(conversations);
         }
-
+        [Authorize]
         [HttpPost("/conversation-search")]
         public async Task<IActionResult> GetbyName(string search)
         {
@@ -73,8 +74,9 @@ namespace socialmediaAPI.Controllers
             var conversations = await _conversationRepository.GetbyFilter(filter);
             return Ok(conversations);
         }
+        [Authorize(Roles = "admin")]
         [HttpPost("/conversation-update/{id}")]
-        public async Task<IActionResult> Update(string id,[FromBody] UpdateConversationRequest request)
+        public async Task<IActionResult> Update(string id,[FromForm] UpdateConversationRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest("invalid modelstate");

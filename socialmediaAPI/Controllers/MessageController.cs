@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using socialmediaAPI.Configs;
@@ -27,6 +28,7 @@ namespace socialmediaAPI.Controllers
             _mapper = mapper;
             _messageFolderName = cloudinaryConfigs.MessageFolderName;
         }
+        [Authorize]
         [HttpPost("/message-send")]
         public async Task<IActionResult> Create([FromForm] MessageCreateRequest request)
         {
@@ -38,7 +40,7 @@ namespace socialmediaAPI.Controllers
              await _messageRepository.Create(message);
             return Ok(message);
         }
-
+        [Authorize]
         [HttpDelete("/message-delete/{id}")]
         public async Task<IActionResult> Edit(string id)
         {
@@ -51,7 +53,7 @@ namespace socialmediaAPI.Controllers
 
             return Ok($"delete state is {deletedMessage!=null}");
         }
-
+        [Authorize]
         [HttpPost("/message-get-many/{skip}")]
         public async Task<IActionResult> GetMany([FromBody] List<string> messageIds, int skip)
         {

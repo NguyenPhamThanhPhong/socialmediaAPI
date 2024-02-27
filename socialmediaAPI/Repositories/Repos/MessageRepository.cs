@@ -23,7 +23,10 @@ namespace socialmediaAPI.Repositories.Repos
         {
             await _messageCollection.InsertOneAsync(message);
             var conversationFilter = Builders<Conversation>.Filter.Eq(c => c.ID, message.ConversationId);
-            var converationUpdate = Builders<Conversation>.Update.Push(c => c.MessageIds, message.Id);
+            var converationUpdate = Builders<Conversation>.Update
+                .Push(c => c.MessageIds, message.Id)
+                .Set(c => c.RecentMessage, message.Content)
+                .Set(c => c.RecentTime, message.SendTime);
             await _conversationCollection.UpdateOneAsync(conversationFilter, converationUpdate);
 
         }

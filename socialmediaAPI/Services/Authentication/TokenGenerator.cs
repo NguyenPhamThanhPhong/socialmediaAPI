@@ -24,7 +24,8 @@ namespace socialmediaAPI.Services.Authentication
             List<Claim> claims = new List<Claim>()
             {
                 new Claim(ClaimTypes.NameIdentifier,user.ID),
-                new Claim(ClaimTypes.Email,user.AuthenticationInfo.Email)
+                new Claim(ClaimTypes.Email,user.AuthenticationInfo.Email),
+                new Claim(ClaimTypes.Role,user.Role)
             };
 
             JwtSecurityToken token = new JwtSecurityToken(

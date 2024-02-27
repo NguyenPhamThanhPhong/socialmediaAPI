@@ -81,6 +81,8 @@ namespace socialmediaAPI.Controllers
             CookieOptions cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
                 Expires = DateTime.UtcNow.AddMinutes(120) // Cookie expiration time
             };
             Response.Cookies.Append("token", accessToken, cookieOptions );

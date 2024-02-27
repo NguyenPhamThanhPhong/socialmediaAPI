@@ -3,10 +3,7 @@
     public class ConversationCreateRequest
     {
         public string? Name { get; set; }
-        public string? AvatarUrl { get; set; }
-        public List<string>? AdminID { get; set; }
         public List<string>? ParticipantIds { get; set; }
-        public bool IsGroup { get; set; }
         public IFormFile? File { get; set; }
     }
 }

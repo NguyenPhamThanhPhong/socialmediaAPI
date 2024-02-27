@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using socialmediaAPI.Models.Entities;
+using System.Security.Claims;
 
 namespace socialmediaAPI.Hubs
 {
@@ -6,36 +8,43 @@ namespace socialmediaAPI.Hubs
     {
         public override async Task OnConnectedAsync()
         {
-            var httpContext = Context.GetHttpContext();
-            var userId = httpContext?.Request.Cookies["userID"];
-            await Groups.AddToGroupAsync(Context.ConnectionId, userId ?? "null");
+            var user = Context.User;
+            if (user?.Identity?.IsAuthenticated != true)
+                return;
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return;
+            await Groups.AddToGroupAsync(Context.ConnectionId, userId);
             await Clients.All.SendAsync("UserConnected", Context.ConnectionId);
+            await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            var httpContext = Context.GetHttpContext();
-            var userId = httpContext?.Request.Cookies["userID"];
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId ?? "null");
-
-            // Notify clients that a user disconnected
-            await Clients.All.SendAsync("UserDisconnected", Context.ConnectionId);
+            var user = Context.User;
+            if (user?.Identity?.IsAuthenticated!=true)
+                return;
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return;
+            await Clients.All.SendAsync("UserDisconnected", userId);
 
             await base.OnDisconnectedAsync(exception);
         }
 
-        public async Task SendMessage(string receiverId,string senderId, string message)
+        public async Task SendMessage(List<string> receiverIds, string conversationId, Message message)
         {
-            if (!string.IsNullOrEmpty(receiverId))
-            {
-                // Send the message to a specific user
-                await Clients.Group(receiverId).SendAsync("ReceiveMessage", senderId, message);
-            }
-            else
-            {
-                // Send the message to all clients
-                await Clients.All.SendAsync("ReceiveMessage", senderId, message);
-            }
+            var senderId = Context?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (senderId == null)
+                return;
+            await Clients.Groups(receiverIds).SendAsync("ReceiveMessage", conversationId, message);
+        }
+        public async Task DeleteMessage(List<string> receiverIds, string conversationId, string messageId)
+        {
+            var senderId = Context?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (senderId == null)
+                return;
+            await Clients.Groups(receiverIds).SendAsync("DeleteMessage", conversationId, messageId);
         }
     }
 }

@@ -132,7 +132,7 @@ namespace socialmediaAPI.Services.CloudinaryService
         }
         public async Task DeleteMany(List<string?> urls)
         {
-            Task[] tasks = new List<Task>();
+            List<Task> tasks = new List<Task>();
             foreach (string? url in urls)
                 tasks.Append(Delete(url));
             await Task.WhenAll(tasks);
